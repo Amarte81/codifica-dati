@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Codifica dei Dati e Architettura - Guida Didattica per il Linguaggio C</title>
+  <style>
+    :root {
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #27354f;
+      --bg-input: #0b1120;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.25);
+      --c-code: #34d399;
+      --c-type: #f472b6;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --success: #4ade80;
+      --border: #334155;
+      --border-accent: #38bdf8;
+      --font-mono: 'Consolas', 'Fira Code', 'Courier New', monospace;
+      --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 80px;
+    }
+
+    /* Header e Barra di Controllo */
+    header {
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .header-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .title-group h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .title-group p {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    /* Switch Modalità */
+    .mode-toggle {
+      display: flex;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      padding: 3px;
+    }
+
+    .mode-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.45rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .mode-btn.active {
+      background: var(--accent);
+      color: #0b1120;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    /* Navigazione Rapida */
+    .quick-nav {
+      max-width: 1280px;
+      margin: 0.5rem auto 1rem;
+      padding: 0 1.5rem;
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: thin;
+    }
+
+    .quick-nav::-webkit-scrollbar {
+      height: 4px;
+    }
+    .quick-nav::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    .nav-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+
+    .nav-pill:hover {
+      border-color: var(--accent);
+      color: var(--text-main);
+    }
+
+    /* Layout Principale */
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* Card di Sezione */
+    .section-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: border-color 0.2s ease;
+    }
+
+    .section-card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .section-header {
+      background: rgba(15, 23, 42, 0.6);
+      border-bottom: 1px solid var(--border);
+      padding: 1.1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .badge-c {
+      background: rgba(52, 211, 153, 0.12);
+      color: var(--c-code);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .section-body {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Modalità Proiezione vs Approfondimento */
+    body.mode-projection .discursive-content {
+      display: none !important;
+    }
+
+    body.mode-projection .projection-content {
+      display: block !important;
+    }
+
+    body.mode-deep .projection-content {
+      display: block;
+    }
+
+    body.mode-deep .discursive-content {
+      display: block !important;
+    }
+
+    /* Griglie per Proiezione (Dense) */
+    .dense-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .dense-box {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .dense-box.highlight {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.04);
+    }
+
+    .dense-box h4 {
+      font-size: 0.95rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dense-box .dense-value {
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    .dense-box ul {
+      list-style-type: none;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .dense-box ul li {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+    }
+
+    .dense-box ul li::before {
+      content: '▪';
+      color: var(--accent);
+      font-size: 1rem;
+    }
+
+    /* Box Didattico C */
+    .c-note-box {
+      background: rgba(30, 41, 59, 0.7);
+      border-left: 4px solid var(--c-code);
+      padding: 1rem;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.9rem;
+    }
+
+    .c-note-box .c-header {
+      font-weight: 700;
+      color: var(--c-code);
+      font-family: var(--font-mono);
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Codice in linea e blocchi */
+    code {
+      font-family: var(--font-mono);
+      background: rgba(15, 23, 42, 0.8);
+      color: #7dd3fc;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    pre {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      line-height: 1.5;
+    }
+
+    .kw { color: #f472b6; font-weight: bold; }
+    .type { color: #38bdf8; }
+    .num { color: #fbbf24; }
+    .str { color: #a7f3d0; }
+    .cmt { color: #64748b; font-style: italic; }
+
+    /* Esempi Progressivi */
+    .examples-container {
+      background: rgba(11, 17, 32, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .examples-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+    }
+
+    .examples-header h3 {
+      font-size: 1rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .example-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .example-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .lvl-badge {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .lvl-easy { background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid #4ade80; }
+    .lvl-med { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid #fbbf24; }
+    .lvl-adv { background: rgba(248, 113, 113, 0.15); color: #f87171; border: 1px solid #f87171; }
+
+    .bi-dir {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--bg-input);
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+
+    .bi-dir .arrow {
+      color: var(--accent);
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .step-list {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding-left: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    /* Generatore di Esercizi Interattivo */
+    .trainer-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.08);
+    }
+
+    .trainer-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .trainer-head h4 {
+      font-size: 1rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .trainer-diff-select {
+      display: flex;
+      gap: 0.35rem;
+    }
+
+    .diff-btn {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .diff-btn.active {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .trainer-prompt {
+      background: var(--bg-input);
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .prompt-text {
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    .prompt-val {
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #38bdf8;
+      letter-spacing: 1px;
+    }
+
+    .trainer-interactive {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .trainer-input {
+      flex: 1;
+      min-width: 200px;
+      background: #000000;
+      border: 1px solid var(--border);
+      color: #ffffff;
+      padding: 0.65rem 1rem;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .trainer-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    .btn-act {
+      background: var(--accent);
+      color: #0b1120;
+      border: none;
+      padding: 0.65rem 1.25rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-act:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-sec {
+      background: var(--bg-input);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 0.65rem 1rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .btn-sec:hover {
+      color: var(--text-main);
+      border-color: var(--text-muted);
+    }
+
+    .trainer-feedback {
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .trainer-feedback.correct {
+      display: block;
+      background: rgba(74, 222, 128, 0.15);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+
+    .trainer-feedback.wrong {
+      display: block;
+      background: rgba(248, 113, 113, 0.15);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+
+    .trainer-solution {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: none;
+      line-height: 1.5;
+    }
+
+    /* Visualizzatore Interattivo a Bit */
+    .bit-visualizer {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .bit-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 0.35rem;
+    }
+
+    .bit-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .bit-idx {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .bit-btn {
+      width: 100%;
+      aspect-ratio: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 800;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .bit-btn.active {
+      background: var(--accent);
+      color: #0b1120;
+      border-color: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .bit-weights {
+      font-size: 0.65rem;
+      color: var(--c-code);
+      font-family: var(--font-mono);
+    }
+
+    .bit-results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.5rem;
+      background: #000000;
+      padding: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    .bit-res-item span {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .bit-res-item strong {
+      color: #38bdf8;
+      font-size: 1.05rem;
+    }
+
+    /* Visualizzatore IEEE 754 a 32 bit */
+    .ieee-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .ieee-fields {
+      display: flex;
+      border-radius: 6px;
+      overflow: hidden;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .ieee-sign {
+      flex: 1;
+      background: rgba(56, 189, 248, 0.25);
+      color: #38bdf8;
+      padding: 0.4rem 0.2rem;
+      border-right: 1px solid var(--border);
+    }
+
+    .ieee-exp {
+      flex: 8;
+      background: rgba(74, 222, 128, 0.25);
+      color: #4ade80;
+      padding: 0.4rem 0.2rem;
+      border-right: 1px solid var(--border);
+    }
+
+    .ieee-mant {
+      flex: 23;
+      background: rgba(251, 191, 36, 0.25);
+      color: #fbbf24;
+      padding: 0.4rem 0.2rem;
+    }
+
+    /* Tabella di Riepilogo Finale */
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--accent);
+      padding: 0.85rem 1rem;
+      border-bottom: 2px solid var(--border);
+      font-weight: 700;
+    }
+
+    td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(15, 23, 42, 0.4);
+    }
+
+    tr:hover td {
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    /* Note per la proiezione su grande schermo */
+    @media (min-width: 1024px) {
+      body.mode-projection .dense-box h4 {
+        font-size: 1.15rem;
+      }
+      body.mode-projection .dense-box .dense-value {
+        font-size: 1.35rem;
+      }
+      body.mode-projection .dense-box ul {
+        font-size: 1rem;
+      }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .controls-group {
+        justify-content: space-between;
+      }
+      .bi-dir {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .bi-dir .arrow {
+        transform: rotate(90deg);
+      }
+      .bit-grid {
+        gap: 0.2rem;
+      }
+      .bit-btn {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body class="mode-deep">
+
+  <!-- Header Fisso con Switch Modalità -->
+  <header>
+    <div class="header-container">
+      <div class="title-group">
+        <h1><span>💻</span> Codifica Dati & Sistemi Numerici</h1>
+        <p>Prospettiva Architettura Hardware & Linguaggio C</p>
+      </div>
+      <div class="controls-group">
+        <div class="mode-toggle">
+          <button class="mode-btn" id="btnModeProj" onclick="setMode('projection')">
+            <span>📽️</span> Proiezione (Dense)
+          </button>
+          <button class="mode-btn active" id="btnModeDeep" onclick="setMode('deep')">
+            <span>📖</span> Approfondimento (Dispensa)
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Barra Navigazione Rapida -->
+    <div class="quick-nav">
+      <a href="#cat1" class="nav-pill">1. Basi Numeriche</a>
+      <a href="#cat2" class="nav-pill">2. Interi Unsigned</a>
+      <a href="#cat3" class="nav-pill">3. Interi Signed (C2)</a>
+      <a href="#cat4" class="nav-pill">4. IEEE 754 Float</a>
+      <a href="#cat5" class="nav-pill">5. ASCII</a>
+      <a href="#cat6" class="nav-pill">6. UTF-8</a>
+      <a href="#bitInspectorSec" class="nav-pill">🔬 Bit Inspector</a>
+      <a href="#riepilogo" class="nav-pill">📊 Tabella Riepilogo</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ========================================== -->
+    <!-- CATEGORIA 1: BASI NUMERICHE (Solo Proiezione) -->
+    <!-- ========================================== -->
+    <section id="cat1" class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>1.</span> Basi Numeriche & Notazione Posizionale
+        </div>
+        <span class="badge-c">C Literals: 0b, 0, 0x</span>
+      </div>
+      <div class="section-body">
+        <!-- Schede Dense da Proiezione -->
+        <div class="dense-grid">
+          <div class="dense-box highlight">
+            <h4>Binario (Base 2) <span>0b...</span></h4>
+            <div class="dense-value">Cifre: {0, 1}</div>
+            <ul>
+              <li>Linguaggio nativo dei transistor & flip-flop</li>
+              <li>1 byte = 8 bit (256 stati distinti)</li>
+              <li>Operatori C bitwise: <code>&amp;</code>, <code>|</code>, <code>^</code>, <code>~</code>, <code>&lt;&lt;</code>, <code>&gt;&gt;</code></li>
+            </ul>
+          </div>
+          <div class="dense-box">
+            <h4>Esadecimale (Base 16) <span>0x...</span></h4>
+            <div class="dense-value">Cifre: 0-9, A-F</div>
+            <ul>
+              <li>1 cifra HEX = esattamente <strong>4 bit</strong> (1 nibble)</li>
+              <li>2 cifre HEX = esattamente <strong>1 byte</strong> (es. <code>0xFF</code> = 255)</li>
+              <li>Formati printf: <code>%x</code> (minuscolo), <code>%X</code> (maiuscolo), <code>%p</code> (puntatori)</li>
+            </ul>
+          </div>
+          <div class="dense-box">
+            <h4>Ottale (Base 8) <span>0...</span></h4>
+            <div class="dense-value">Cifre: 0-7</div>
+            <ul>
+              <li>1 cifra OTT = esattamente <strong>3 bit</strong></li>
+              <li><strong>Attenzione in C:</strong> prefisso <code>0</code> (es. <code>int a = 012;</code> vale 10 decimale!)</li>
+              <li>Usato nei permessi POSIX Unix (es. <code>chmod 0755</code>)</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Mappa Rapida dei Nibble -->
+        <div class="c-note-box">
+          <div class="c-header">📌 Tabella di Corrispondenza Nibble (4 bit ↔ Hex) da Proiezione:</div>
+          <div style="font-family: var(--font-mono); font-size: 0.85rem; color: #e2e8f0; overflow-x: auto;">
+            <code>
+              0000=0 | 0001=1 | 0010=2 | 0011=3 | 0100=4 | 0101=5 | 0110=6 | 0111=7<br>
+              1000=8 | 1001=9 | 1010=A | 1011=B | 1100=C | 1101=D | 1110=E | 1111=F
+            </code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- CATEGORIA 2: INTERI SENZA SEGNO (UNSIGNED) -->
+    <!-- ========================================== -->
+    <section id="cat2" class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>2.</span> Interi Senza Segno (Unsigned)
+        </div>
+        <span class="badge-c">unsigned int, uint8_t, %u</span>
+      </div>
+      <div class="section-body">
+
+        <!-- DENSE PROIEZIONE -->
+        <div class="dense-grid">
+          <div class="dense-box highlight">
+            <h4>Rappresentazione Posizionale Pura</h4>
+            <div class="dense-value">V = Σ (bᵢ × 2ⁱ)</div>
+            <ul>
+              <li>Tutti gli n bit concorrono al valore positivo assoluto</li>
+              <li>Range con n bit: <strong>[0, 2ⁿ - 1]</strong></li>
+              <li>8 bit: 0 .. 255 | 16 bit: 0 .. 65.535 | 32 bit: 0 .. 4.294.967.295</li>
+            </ul>
+          </div>
+          <div class="dense-box">
+            <h4>Comportamento di Overflow in C</h4>
+            <div class="dense-value">Aritmetica Modulo 2ⁿ</div>
+            <ul>
+              <li><strong>Nessun Undefined Behavior:</strong> garantito dallo standard C</li>
+              <li>Se si supera il massimo, riparte da 0 (wraparound)</li>
+              <li>Esempio: <code>uint8_t x = 255; x++;</code> → <code>x = 0</code></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- APPROFONDIMENTO DISCUSSIVO -->
+        <div class="discursive-content">
+          <h3 style="color: var(--accent); margin-bottom: 0.5rem;">📖 Approfondimento: La Memoria e i Tipi Unsigned in C</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.8rem;">
+            Nel linguaggio C, un intero senza segno dichiara esplicitamente al compilatore che tutti i bit allocati per la variabile devono essere interpretati come pesi positivi di potenze di 2. Con l'introduzione dello standard C99 e dell'header <code>&lt;stdint.h&gt;</code>, il programmatore può selezionare tipi a dimensione prefissata garantita su qualsiasi architettura (ad esempio <code>uint8_t</code> per 8 bit, <code>uint16_t</code> per 16 bit, <code>uint32_t</code> per 32 bit e <code>uint64_t</code> per 64 bit).
+          </p>
+          <pre><span class="cmt">// Esempio di gestione unsigned ed overflow in C</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;stdint.h&gt;</span>
+
+<span class="type">int</span> <span class="kw">main</span>() {
+    <span class="type">uint8_t</span> contatore = <span class="num">250</span>;
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; <span class="num">8</span>; i++) {
+        <span class="kw">printf</span>(<span class="str">"Valore: %u (Hex: 0x%02X)\n"</span>, contatore, contatore);
+        contatore++; <span class="cmt">// Al superamento di 255 fa wraparound a 0</span>
+    }
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+          <div class="c-note-box" style="margin-top: 0.8rem;">
+            <div class="c-header">⚠️ Attenzione ai loop infiniti in C:</div>
+            Un errore tipico dei principianti è scrivere <code>for (uint8_t i = 10; i &gt;= 0; i--)</code>. Poiché un tipo unsigned è <em>sempre</em> &ge; 0 per definizione matematica, la condizione <code>i &gt;= 0</code> non sarà mai falsa: quando <code>i</code> raggiunge lo zero, decrementandolo diventa <code>255</code>, creando un ciclo infinito!
+          </div>
+        </div>
+
+        <!-- 3 ESEMPI PROGRESSIVI BIDIREZIONALI -->
+        <div class="examples-container">
+          <div class="examples-header">
+            <h3><span>🧪</span> 3 Esempi Progressivi Bidirezionali</h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Decimale ↔ Binario / Hex</span>
+          </div>
+
+          <!-- Esempio 1: Base -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 1: Conversione Base a 8 bit</span>
+              <span class="lvl-badge lvl-easy">Facile</span>
+            </div>
+            <div class="bi-dir">
+              <div>Decimale: <strong>42</strong></div>
+              <div class="arrow">⇄</div>
+              <div>Binario: <strong>00101010₂</strong> (Hex: <strong>0x2A</strong>)</div>
+            </div>
+            <ol class="step-list">
+              <li><strong>Dec → Bin:</strong> 42 = 32 + 8 + 2 = 2⁵ + 2³ + 2¹ → Bit accesi a indice 5, 3, 1 → <code>00101010</code>.</li>
+              <li><strong>Bin → Dec:</strong> 0×128 + 0×64 + 1×32 + 0×16 + 1×8 + 0×4 + 1×2 + 0×1 = 32 + 8 + 2 = 42.</li>
+            </ol>
+          </div>
+
+          <!-- Esempio 2: Medio -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 2: Confine a 16 bit (uint16_t)</span>
+              <span class="lvl-badge lvl-med">Intermedio</span>
+            </div>
+            <div class="bi-dir">
+              <div>Decimale: <strong>1000</strong></div>
+              <div class="arrow">⇄</div>
+              <div>Binario: <strong>00000011 11101000₂</strong> (Hex: <strong>0x03E8</strong>)</div>
+            </div>
+            <ol class="step-list">
+              <li><strong>Scomposizione potenze:</strong> 1000 = 512 (2⁹) + 256 (2⁸) + 128 (2⁷) + 64 (2⁶) + 32 (2⁵) + 8 (2³).</li>
+              <li><strong>Hex grouping:</strong> <code>0000 0011</code> = <code>0x03</code>, <code>1110 1000</code> = <code>0xE8</code> → <code>0x03E8</code>.</li>
+            </ol>
+          </div>
+
+          <!-- Esempio 3: Avanzato -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 3: Bit di riporto e Wraparound in C</span>
+              <span class="lvl-badge lvl-adv">Avanzato (C Edge-Case)</span>
+            </div>
+            <div class="bi-dir">
+              <div>Operazione: <strong>255 + 1 (uint8_t)</strong></div>
+              <div class="arrow">⇄</div>
+              <div>Risultato: <strong>0 (0x00)</strong> + Carry scartato</div>
+            </div>
+            <ol class="step-list">
+              <li><code>11111111₂ (255) + 00000001₂ (1) = 1 00000000₂ (256)</code>.</li>
+              <li>Il registro a 8 bit conserva solo i primi 8 bit (<code>00000000</code> = 0). Il 9° bit attiva il flag di riporto (Carry Flag) della CPU ma non entra nella variabile!</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- GENERATORE DI ESERCIZI CAT 2 -->
+        <div class="trainer-card" id="trainerCat2">
+          <div class="trainer-head">
+            <h4><span>🎯</span> Generatore di Esercizi: Interi Unsigned</h4>
+            <div class="trainer-diff-select">
+              <button class="diff-btn active" onclick="setTrainerDiff('cat2', 'easy')">Facile (8-bit)</button>
+              <button class="diff-btn" onclick="setTrainerDiff('cat2', 'med')">Medio (Hex)</button>
+              <button class="diff-btn" onclick="setTrainerDiff('cat2', 'hard')">Difficile (16-bit)</button>
+            </div>
+          </div>
+          <div class="trainer-prompt">
+            <div class="prompt-text" id="cat2PromptText">Converti il seguente numero decimale in binario (8 bit esatti):</div>
+            <div class="prompt-val" id="cat2PromptVal">45</div>
+          </div>
+          <div class="trainer-interactive">
+            <input type="text" class="trainer-input" id="cat2Input" placeholder="Inserisci il valore (es. 00101101)..." onkeydown="if(event.key==='Enter') verifyCat2()">
+            <button class="btn-act" onclick="verifyCat2()">Verifica</button>
+            <button class="btn-sec" onclick="newExerciseCat2()">Nuovo Esercizio</button>
+            <button class="btn-sec" onclick="toggleSolution('cat2')">Mostra Passaggi</button>
+          </div>
+          <div class="trainer-feedback" id="cat2Feedback"></div>
+          <div class="trainer-solution" id="cat2Solution"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- CATEGORIA 3: INTERI CON SEGNO (COMPLEMENTO A 2) -->
+    <!-- ========================================== -->
+    <section id="cat3" class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>3.</span> Interi con Segno & Complemento a Due
+        </div>
+        <span class="badge-c">int, int8_t, int16_t, %d</span>
+      </div>
+      <div class="section-body">
+
+        <!-- DENSE PROIEZIONE -->
+        <div class="dense-grid">
+          <div class="dense-box highlight">
+            <h4>Regola del Peso Negativo (MSB)</h4>
+            <div class="dense-value">MSB = -2ⁿ⁻¹</div>
+            <ul>
+              <li>Il bit più a sinistra ha valore posizionale <strong>-2ⁿ⁻¹</strong></li>
+              <li>Per 8 bit: peso del bit 7 è <strong>-128</strong>!</li>
+              <li>Range con n bit: <strong>[-2ⁿ⁻¹, +2ⁿ⁻¹ - 1]</strong> (8 bit: -128 .. +127)</li>
+            </ul>
+          </div>
+          <div class="dense-box">
+            <h4>Algoritmo di Negazione</h4>
+            <div class="dense-value">-X = ~X + 1</div>
+            <ul>
+              <li>1. Inverti tutti i bit (NOT bitwise <code>~</code>)</li>
+              <li>2. Aggiungi 1 al risultato</li>
+              <li>Unico zero (<code>00000000</code>), niente +0 e -0 separati</li>
+              <li>L'ALU esegue la sottrazione usando lo stesso sommatore: <code>A - B = A + (~B + 1)</code></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- APPROFONDIMENTO DISCUSSIVO -->
+        <div class="discursive-content">
+          <h3 style="color: var(--accent); margin-bottom: 0.5rem;">📖 Approfondimento: Perché l'Informatica usa il Complemento a Due?</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.8rem;">
+            Nei primi calcolatori storici si tentò l'approccio "Modulo e Segno" (1 bit per il segno e i restanti bit per il valore assoluto). Questo creava due gravissimi difetti ingegneristici: la presenza di due zeri distinti (<code>+0</code> e <code>-0</code>, costringendo i circuiti logici a fare doppi controlli) e la necessità di progettare circuiti separati per la sottrazione.
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.8rem;">
+            Nel <strong>Complemento a Due</strong>, l'addizione tra numeri positivi e negativi funziona spontaneamente con la medesima algebra hardware. Inoltre, l'intervallo è asimmetrico: con 8 bit possiamo andare da <code>-128</code> a <code>+127</code>. Questo introduce una famosa anomalia in C: <code>abs(-128)</code> non può produrre <code>+128</code> su un <code>int8_t</code>, provocando overflow!
+          </p>
+          <pre><span class="cmt">// Sottrazione a livello hardware in C</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="type">int</span> <span class="kw">main</span>() {
+    <span class="type">char</span> a = <span class="num">7</span>;    <span class="cmt">// 00000111</span>
+    <span class="type">char</span> b = <span class="num">10</span>;   <span class="cmt">// 00001010 -&gt; Negato e +1: 11110110 (-10)</span>
+    <span class="type">char</span> r = a - b; <span class="cmt">// ALU fa: 00000111 + 11110110 = 11111101 (-3)</span>
+    <span class="kw">printf</span>(<span class="str">"Risultato: %d\n"</span>, r); <span class="cmt">// Stampa: -3</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+        </div>
+
+        <!-- 3 ESEMPI PROGRESSIVI BIDIREZIONALI -->
+        <div class="examples-container">
+          <div class="examples-header">
+            <h3><span>🧪</span> 3 Esempi Progressivi Bidirezionali</h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Signed Decimale ↔ Complemento a 2</span>
+          </div>
+
+          <!-- Esempio 1: Base -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 1: Calcolo di un negativo semplice (-5 su 8 bit)</span>
+              <span class="lvl-badge lvl-easy">Facile</span>
+            </div>
+            <div class="bi-dir">
+              <div>Decimale: <strong>-5</strong></div>
+              <div class="arrow">⇄</div>
+              <div>Binario C2: <strong>11111011₂</strong> (Hex: <strong>0xFB</strong>)</div>
+            </div>
+            <ol class="step-list">
+              <li>Scrivi +5 su 8 bit: <code>00000101</code>.</li>
+              <li>Inverti tutti i bit (NOT): <code>11111010</code>.</li>
+              <li>Somma 1: <code>11111010 + 1 = 11111011</code>.</li>
+              <li><strong>Verifica peso MSB:</strong> -128 + 64 + 32 + 16 + 8 + 0 + 2 + 1 = -128 + 123 = -5.</li>
+            </ol>
+          </div>
+
+          <!-- Esempio 2: Medio -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 2: Il valore estremo negativo (-128)</span>
+              <span class="lvl-badge lvl-med">Intermedio</span>
+            </div>
+            <div class="bi-dir">
+              <div>Decimale: <strong>-128</strong></div>
+              <div class="arrow">⇄</div>
+              <div>Binario C2: <strong>10000000₂</strong> (Hex: <strong>0x80</strong>)</div>
+            </div>
+            <ol class="step-list">
+              <li>Il bit di segno è 1 (peso -128). Tutti gli altri 7 bit sono 0.</li>
+              <li>Valore = -128 + 0 = -128.</li>
+              <li>Se provi a negarlo applicando la regola: <code>~10000000 = 01111111</code>; <code>+1 = 10000000</code> (torna a -128!). In C, su 8 bit non esiste +128.</li>
+            </ol>
+          </div>
+
+          <!-- Esempio 3: Avanzato -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 3: Interpretazione inversa e Sign Extension</span>
+              <span class="lvl-badge lvl-adv">Avanzato (Typecast C)</span>
+            </div>
+            <div class="bi-dir">
+              <div>int8_t: <strong>0xFE (-2)</strong></div>
+              <div class="arrow">⇄</div>
+              <div>int16_t: <strong>0xFFFE (-2)</strong> (Estensione di segno)</div>
+            </div>
+            <ol class="step-list">
+              <li>Quando in C assegni un <code>int8_t</code> negativo a un <code>int16_t</code>, il compilatore deve replicare il bit di segno a sinistra (*Sign Extension*).</li>
+              <li><code>11111110</code> (8 bit, -2) diventa <code>11111111 11111110</code> (16 bit, -2). Se si usassero zeri diventerebbe <code>0x00FE = +254</code>!</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- GENERATORE DI ESERCIZI CAT 3 -->
+        <div class="trainer-card" id="trainerCat3">
+          <div class="trainer-head">
+            <h4><span>🎯</span> Generatore di Esercizi: Complemento a Due</h4>
+            <div class="trainer-diff-select">
+              <button class="diff-btn active" onclick="setTrainerDiff('cat3', 'easy')">Facile (-1 .. -20)</button>
+              <button class="diff-btn" onclick="setTrainerDiff('cat3', 'med')">Medio (Full 8-bit)</button>
+              <button class="diff-btn" onclick="setTrainerDiff('cat3', 'hard')">Difficile (Bin → Dec Signed)</button>
+            </div>
+          </div>
+          <div class="trainer-prompt">
+            <div class="prompt-text" id="cat3PromptText">Calcola la rappresentazione in Complemento a 2 su 8 bit per:</div>
+            <div class="prompt-val" id="cat3PromptVal">-12</div>
+          </div>
+          <div class="trainer-interactive">
+            <input type="text" class="trainer-input" id="cat3Input" placeholder="Inserisci 8 bit (es. 11110100)..." onkeydown="if(event.key==='Enter') verifyCat3()">
+            <button class="btn-act" onclick="verifyCat3()">Verifica</button>
+            <button class="btn-sec" onclick="newExerciseCat3()">Nuovo Esercizio</button>
+            <button class="btn-sec" onclick="toggleSolution('cat3')">Mostra Passaggi</button>
+          </div>
+          <div class="trainer-feedback" id="cat3Feedback"></div>
+          <div class="trainer-solution" id="cat3Solution"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- CATEGORIA 4: NUMERI REALI (SOLO IEEE 754) -->
+    <!-- ========================================== -->
+    <section id="cat4" class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>4.</span> Numeri Reali: Standard IEEE 754
+        </div>
+        <span class="badge-c">float (32 bit), double (64 bit), %f</span>
+      </div>
+      <div class="section-body">
+
+        <!-- DENSE PROIEZIONE -->
+        <div class="dense-grid">
+          <div class="dense-box highlight">
+            <h4>Anatomia del Float 32-bit (Single Precision)</h4>
+            <div class="dense-value">(-1)ˢ × (1.M) × 2^(E - 127)</div>
+            <div class="ieee-box" style="margin-top: 0.5rem;">
+              <div class="ieee-fields">
+                <div class="ieee-sign">S (1)</div>
+                <div class="ieee-exp">Esponente (8 bit)</div>
+                <div class="ieee-mant">Mantissa / Frazione (23 bit)</div>
+              </div>
+            </div>
+            <ul>
+              <li><strong>S (Segno):</strong> 0 = positivo, 1 = negativo</li>
+              <li><strong>Esponente:</strong> Polarizzato con Bias = 127 (E_reale = E_memorizzato - 127)</li>
+              <li><strong>Mantissa:</strong> Parte frazionaria con 1 implicito (1.frazione)</li>
+            </ul>
+          </div>
+          <div class="dense-box">
+            <h4>Casi Speciali & Trabocchetti C</h4>
+            <div class="dense-value">0.1 + 0.2 != 0.3</div>
+            <ul>
+              <li><strong>Esponente = 255:</strong> Se mantissa = 0 → <code>+Inf / -Inf</code> (divisione per zero). Se mantissa &ne; 0 → <code>NaN</code> (0/0)</li>
+              <li><strong>Esponente = 0:</strong> Numeri denormalizzati e zeri con segno (+0.0f e -0.0f)</li>
+              <li>Le frazioni decimali come 0.1 sono numeri periodici in binario, quindi approssimate!</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- APPROFONDIMENTO DISCUSSIVO (Solo IEEE 754) -->
+        <div class="discursive-content">
+          <h3 style="color: var(--accent); margin-bottom: 0.5rem;">📖 Approfondimento: Come ragiona la FPU di un computer</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.8rem;">
+            A differenza degli interi, che sono esatti fino al loro limite di capienza, i numeri in virgola mobile (definiti dallo standard <strong>IEEE 754-1985</strong>) scambiano l'accuratezza assoluta con una dinamica di scala gigantesca. Un <code>float</code> a 32 bit può rappresentare numeri fino a circa $3.4 \times 10^{38}$ e piccoli fino a $1.4 \times 10^{-45}$, ma ha soltanto <strong>7 cifre decimali di precisione significativa</strong>.
+          </p>
+          <pre><span class="cmt">// Ispezione a basso livello dei bit di un float in C tramite union</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;stdint.h&gt;</span>
+
+<span class="kw">typedef union</span> {
+    <span class="type">float</span> f;
+    <span class="kw">struct</span> {
+        <span class="type">uint32_t</span> mantissa : <span class="num">23</span>;
+        <span class="type">uint32_t</span> esponente : <span class="num">8</span>;
+        <span class="type">uint32_t</span> segno : <span class="num">1</span>;
+    } campi;
+    <span class="type">uint32_t</span> raw;
+} FloatInspector;
+
+<span class="type">int</span> <span class="kw">main</span>() {
+    FloatInspector fi;
+    fi.f = -<span class="num">12.375f</span>;
+    <span class="kw">printf</span>(<span class="str">"Float: %f\n"</span>, fi.f);
+    <span class="kw">printf</span>(<span class="str">"Segno: %u | Esp: %u (dec) | Mantissa: 0x%X | Hex Raw: 0x%08X\n"</span>,
+           fi.campi.segno, fi.campi.esponente, fi.campi.mantissa, fi.raw);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+        </div>
+
+        <!-- 3 ESEMPI PROGRESSIVI BIDIREZIONALI -->
+        <div class="examples-container">
+          <div class="examples-header">
+            <h3><span>🧪</span> 3 Esempi Progressivi Bidirezionali</h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Decimale Reale ↔ IEEE 754 32-bit</span>
+          </div>
+
+          <!-- Esempio 1: Base -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 1: Numero positivo semplice (+2.5)</span>
+              <span class="lvl-badge lvl-easy">Facile</span>
+            </div>
+            <div class="bi-dir">
+              <div>Decimale: <strong>+2.5</strong></div>
+              <div class="arrow">⇄</div>
+              <div>IEEE 754: <strong>0x40200000</strong></div>
+            </div>
+            <ol class="step-list">
+              <li><strong>Segno:</strong> Positivo → S = <code>0</code>.</li>
+              <li><strong>Binario:</strong> 2 = <code>10₂</code>; 0.5 = <code>0.1₂</code> → 2.5 = <code>10.1₂</code>.</li>
+              <li><strong>Normalizzazione:</strong> <code>10.1₂ = 1.01₂ × 2¹</code> (Esponente reale = +1).</li>
+              <li><strong>Esponente polarizzato:</strong> 1 + 127 = 128 = <code>10000000₂</code>.</li>
+              <li><strong>Mantissa:</strong> togli l'1 implicito → <code>01000000000000000000000</code>.</li>
+              <li>Bit: <code>0 | 10000000 | 01000000000000000000000</code> → Hex <code>0x40200000</code>.</li>
+            </ol>
+          </div>
+
+          <!-- Esempio 2: Medio -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 2: Numero negativo con parte frazionaria (-12.375)</span>
+              <span class="lvl-badge lvl-med">Intermedio</span>
+            </div>
+            <div class="bi-dir">
+              <div>Decimale: <strong>-12.375</strong></div>
+              <div class="arrow">⇄</div>
+              <div>IEEE 754: <strong>0xC1460000</strong></div>
+            </div>
+            <ol class="step-list">
+              <li><strong>Segno:</strong> Negativo → S = <code>1</code>.</li>
+              <li>12 = <code>1100₂</code>; 0.375 × 2 = 0.75 (0), 0.75 × 2 = 1.5 (1), 0.5 × 2 = 1.0 (1) → <code>0.011₂</code>.</li>
+              <li>Numero in binario: <code>1100.011₂</code> → normalizzato <code>1.100011₂ × 2³</code>.</li>
+              <li><strong>Esponente:</strong> 3 + 127 = 130 = <code>10000010₂</code>.</li>
+              <li><strong>Mantissa:</strong> <code>10001100000000000000000</code>.</li>
+              <li>Hex complessivo: <code>1100 0001 0100 0110 0000...</code> = <code>0xC1460000</code>.</li>
+            </ol>
+          </div>
+
+          <!-- Esempio 3: Avanzato -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 3: Decodifica Inversa (Da Hex a Valore Reale)</span>
+              <span class="lvl-badge lvl-adv">Avanzato</span>
+            </div>
+            <div class="bi-dir">
+              <div>Hex: <strong>0x3F800000</strong></div>
+              <div class="arrow">⇄</div>
+              <div>Decimale: <strong>+1.0f</strong></div>
+            </div>
+            <ol class="step-list">
+              <li>Espansione binaria: <code>0 | 01111111 | 00000000000000000000000</code>.</li>
+              <li>Segno S = 0 (positivo). Esponente = <code>01111111₂</code> = 127.</li>
+              <li>Esponente reale = 127 - 127 = 0 (quindi $2^0 = 1$).</li>
+              <li>Mantissa = 0 → valore normalizzato $1.0$. Risultato finale: $+1.0 \times 2^0 = 1.0$.</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- GENERATORE DI ESERCIZI CAT 4 -->
+        <div class="trainer-card" id="trainerCat4">
+          <div class="trainer-head">
+            <h4><span>🎯</span> Generatore di Esercizi: IEEE 754 Float</h4>
+            <div class="trainer-diff-select">
+              <button class="diff-btn active" onclick="setTrainerDiff('cat4', 'easy')">Facile (Interi / Mezzi)</button>
+              <button class="diff-btn" onclick="setTrainerDiff('cat4', 'med')">Medio (Quarti / Ottavi)</button>
+              <button class="diff-btn" onclick="setTrainerDiff('cat4', 'hard')">Difficile (Campi S/E/M)</button>
+            </div>
+          </div>
+          <div class="trainer-prompt">
+            <div class="prompt-text" id="cat4PromptText">Dato il numero reale, calcola il valore dell'Esponente Polarizzato a 8 bit (valore decimale da 0 a 255):</div>
+            <div class="prompt-val" id="cat4PromptVal">+6.5</div>
+          </div>
+          <div class="trainer-interactive">
+            <input type="text" class="trainer-input" id="cat4Input" placeholder="Inserisci valore (es. 129)..." onkeydown="if(event.key==='Enter') verifyCat4()">
+            <button class="btn-act" onclick="verifyCat4()">Verifica</button>
+            <button class="btn-sec" onclick="newExerciseCat4()">Nuovo Esercizio</button>
+            <button class="btn-sec" onclick="toggleSolution('cat4')">Mostra Passaggi</button>
+          </div>
+          <div class="trainer-feedback" id="cat4Feedback"></div>
+          <div class="trainer-solution" id="cat4Solution"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- CATEGORIA 5: ASCII E ASCII ESTESO -->
+    <!-- ========================================== -->
+    <section id="cat5" class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>5.</span> Codifica Caratteri: ASCII & ASCII Esteso
+        </div>
+        <span class="badge-c">char, 'A' == 65, %c</span>
+      </div>
+      <div class="section-body">
+
+        <!-- DENSE PROIEZIONE -->
+        <div class="dense-grid">
+          <div class="dense-box highlight">
+            <h4>ASCII Standard (7 bit)</h4>
+            <div class="dense-value">128 Caratteri (0 .. 127)</div>
+            <ul>
+              <li><strong>0 .. 31:</strong> Controlli non stampabili (NUL=0, LF=10 '\n', CR=13, TAB=9)</li>
+              <li><strong>'0' .. '9':</strong> 0x30 .. 0x39 (48 .. 57)</li>
+              <li><strong>'A' .. 'Z':</strong> 0x41 .. 0x5A (65 .. 90)</li>
+              <li><strong>'a' .. 'z':</strong> 0x61 .. 0x7A (97 .. 122)</li>
+            </ul>
+          </div>
+          <div class="dense-box">
+            <h4>Il Trucco del Bit 5 in C & ASCII Esteso</h4>
+            <div class="dense-value">'a' - 'A' = 32 (0x20 = 00100000₂)</div>
+            <ul>
+              <li>La sola differenza tra maiuscola e minuscola è il <strong>bit 5</strong>!</li>
+              <li>Maiuscolo in C: <code>c &amp; ~0x20</code> | Minuscolo: <code>c | 0x20</code></li>
+              <li><strong>ASCII Esteso (8 bit, 256 car.):</strong> ISO 8859-1 (Latin-1) aggiunge lettere accentate (è, à, ò). Limite: frammentazione incompatibile!</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- APPROFONDIMENTO DISCUSSIVO -->
+        <div class="discursive-content">
+          <h3 style="color: var(--accent); margin-bottom: 0.5rem;">📖 Approfondimento: In C i "Caratteri" sono Interi a 8 bit!</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.8rem;">
+            Uno dei concetti più liberatori per uno studente di C è comprendere che il tipo <code>char</code> non è affatto un "testo magico", bensì semplicemente un numero intero memorizzato su 1 byte. Scrivere <code>'A'</code> nel codice sorgente è letteralmente identico per il compilatore a scrivere il numero <code>65</code>. Di conseguenza, su un carattere si possono eseguire tutte le operazioni aritmetiche e logiche:
+          </p>
+          <pre><span class="cmt">// Trucchi di manipolazione caratteri tipici del C</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="type">int</span> <span class="kw">main</span>() {
+    <span class="type">char</span> c = <span class="str">'7'</span>;
+    <span class="type">int</span> cifra = c - <span class="str">'0'</span>; <span class="cmt">// Converte il char '7' nel numero intero 7! (55 - 48 = 7)</span>
+    
+    <span class="type">char</span> minuscola = <span class="str">'g'</span>;
+    <span class="type">char</span> maiuscola = minuscola &amp; ~<span class="num">0x20</span>; <span class="cmt">// Spegne il bit 5 -&gt; diventa 'G'</span>
+
+    <span class="kw">printf</span>(<span class="str">"Valore numerico: %d, Lettera: %c\n"</span>, cifra, maiuscola);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+          <div class="c-note-box" style="margin-top: 0.8rem;">
+            <div class="c-header">⚠️ Trabocchetto C: 'char' è signed o unsigned?</div>
+            Lo standard C non stabilisce se il tipo <code>char</code> base sia con segno o senza segno: dipende dall'architettura (su x86 è solitamente signed da -128 a 127, su ARM spesso unsigned da 0 a 255). Se si usano caratteri estesi ISO-8859 con codice &gt; 127 (es. 'è' = 232) e il <code>char</code> è signed, il valore risulterà negativo se stampato con <code>%d</code>! Per gestire byte grezzi si raccomanda sempre <code>unsigned char</code> o <code>uint8_t</code>.
+          </div>
+        </div>
+
+        <!-- 3 ESEMPI PROGRESSIVI BIDIREZIONALI (No generatore come richiesto) -->
+        <div class="examples-container">
+          <div class="examples-header">
+            <h3><span>🧪</span> 3 Esempi Progressivi Bidirezionali</h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Carattere ↔ Codice ASCII (Dec/Hex/Bin)</span>
+          </div>
+
+          <!-- Esempio 1: Base -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 1: Codifica di base lettera maiuscola ('A')</span>
+              <span class="lvl-badge lvl-easy">Facile</span>
+            </div>
+            <div class="bi-dir">
+              <div>Carattere: <strong>'A'</strong></div>
+              <div class="arrow">⇄</div>
+              <div>Decimale: <strong>65</strong> | Hex: <strong>0x41</strong> | Bin: <strong>01000001₂</strong></div>
+            </div>
+            <ol class="step-list">
+              <li>In C: <code>char c = 'A'; printf("%d %x", c, c);</code> stampa <code>65 41</code>.</li>
+              <li>Notare il bit 6 acceso (01000000 = 64) + 1 = 65.</li>
+            </ol>
+          </div>
+
+          <!-- Esempio 2: Medio -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 2: Cifre numeriche e differenza con numeri puri</span>
+              <span class="lvl-badge lvl-med">Intermedio</span>
+            </div>
+            <div class="bi-dir">
+              <div>Carattere: <strong>'5'</strong></div>
+              <div class="arrow">⇄</div>
+              <div>Decimale: <strong>53</strong> (0x35) ≠ Valore int <strong>5</strong></div>
+            </div>
+            <ol class="step-list">
+              <li>Il carattere '0' ha valore 48 (0x30). Il carattere '5' ha valore 48 + 5 = 53 (0x35 = <code>00110101₂</code>).</li>
+              <li>Per trasformare il carattere in numero: <code>c - '0' = 53 - 48 = 5</code>.</li>
+            </ol>
+          </div>
+
+          <!-- Esempio 3: Avanzato -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 3: Stringhe C e il Byte Terminatore '\0'</span>
+              <span class="lvl-badge lvl-adv">Avanzato</span>
+            </div>
+            <div class="bi-dir">
+              <div>Stringa C: <strong>"OK\n"</strong></div>
+              <div class="arrow">⇄</div>
+              <div>Byte Array: <strong>[0x4F, 0x4B, 0x0A, 0x00]</strong> (4 byte totali)</div>
+            </div>
+            <ol class="step-list">
+              <li><code>'O'</code> = 0x4F (79) | <code>'K'</code> = 0x4B (75) | <code>'\n'</code> = 0x0A (10, Line Feed).</li>
+              <li>La stringa in C necessita sempre del byte nullo finale <code>'\0'</code> (valore 0x00) per consentire a funzioni come <code>strlen()</code> e <code>printf()</code> di sapere dove termina il testo in memoria.</li>
+            </ol>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- CATEGORIA 6: UNICODE E UTF-8 (SOLO UTF-8) -->
+    <!-- ========================================== -->
+    <section id="cat6" class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>6.</span> Codifica Universale: Solo UTF-8
+        </div>
+        <span class="badge-c">Multibyte char[], Code Points</span>
+      </div>
+      <div class="section-body">
+
+        <!-- DENSE PROIEZIONE -->
+        <div class="dense-grid">
+          <div class="dense-box highlight">
+            <h4>La Regola dei Prefissi Bit in UTF-8</h4>
+            <div class="dense-value">1 .. 4 Byte a Lunghezza Variabile</div>
+            <ul>
+              <li><strong>1 Byte (ASCII puro):</strong> <code>0xxxxxxx</code> (0 .. 127)</li>
+              <li><strong>2 Byte (Europei/Greci/Arabi):</strong> <code>110xxxxx 10xxxxxx</code></li>
+              <li><strong>3 Byte (Asiatici, Euro €):</strong> <code>1110xxxx 10xxxxxx 10xxxxxx</code></li>
+              <li><strong>4 Byte (Emoji, simboli rari):</strong> <code>11110xxx 10xxxxxx 10xxxxxx 10xxxxxx</code></li>
+            </ul>
+          </div>
+          <div class="dense-box">
+            <h4>Proprietà Ingegneristiche Chiave</h4>
+            <div class="dense-value">Self-Synchronizing & ASCII-Compliant</div>
+            <ul>
+              <li><strong>Retrocompatibilità 100%:</strong> Qualsiasi file ASCII puro è GIÀ un file UTF-8 valido senza modifiche!</li>
+              <li><strong>Byte di continuazione:</strong> Iniziano sempre con <code>10xxxxxx</code>. Se perdi la sincronizzazione nel flusso, ti riagganci immediatamente al prossimo carattere.</li>
+              <li>Zero spreco di spazio rispetto a UTF-32.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- APPROFONDIMENTO DISCUSSIVO (Solo UTF-8) -->
+        <div class="discursive-content">
+          <h3 style="color: var(--accent); margin-bottom: 0.5rem;">📖 Approfondimento: La Trappola di UTF-8 in C (`strlen` vs Caratteri)</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.8rem;">
+            Il linguaggio C classico è nato prima di Unicode: per il C un <code>char</code> equivale a 1 byte. In UTF-8, tuttavia, <strong>1 carattere visivo può richiedere da 1 a 4 byte</strong>! Questo genera bug diffusissimi tra gli sviluppatori:
+          </p>
+          <pre><span class="cmt">// Dimostrazione della natura multibyte di UTF-8 in C</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;string.h&gt;</span>
+
+<span class="type">int</span> <span class="kw">main</span>() {
+    <span class="type">char</span> testo[] = <span class="str">"Caffè"</span>; <span class="cmt">// In UTF-8 la 'è' occupa 2 byte: 0xC3 0xA8</span>
+    
+    <span class="kw">printf</span>(<span class="str">"Testo: %s\n"</span>, testo);
+    <span class="kw">printf</span>(<span class="str">"Numero di byte (strlen): %zu\n"</span>, <span class="kw">strlen</span>(testo)); <span class="cmt">// Stampa 6, NON 5!</span>
+    <span class="kw">printf</span>(<span class="str">"Dimensione buffer (sizeof): %zu\n"</span>, <span class="kw">sizeof</span>(testo)); <span class="cmt">// Stampa 7 (+ '\0')</span>
+    
+    <span class="cmt">// Se accediamo a testo[4], otteniamo solo il byte di testa 0xC3, non l'intera 'è'!</span>
+    <span class="kw">printf</span>(<span class="str">"Byte 4 in Hex: 0x%02X\n"</span>, (<span class="type">unsigned char</span>)testo[<span class="num">4</span>]);
+    <span class="kw">printf</span>(<span class="str">"Byte 5 in Hex: 0x%02X\n"</span>, (<span class="type">unsigned char</span>)testo[<span class="num">5</span>]);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+          <div class="c-note-box" style="margin-top: 0.8rem;">
+            <div class="c-header">💡 Come contare i veri caratteri UTF-8 in C?</div>
+            Basta scorrere l'array di byte e contare solo i byte che <strong>NON</strong> iniziano con <code>10xxxxxx</code> (ovvero <code>(byte &amp; 0xC0) != 0x80</code>). In questo modo i byte di continuazione vengono ignorati e si ottiene l'esatto numero di glifi!
+          </div>
+        </div>
+
+        <!-- 3 ESEMPI PROGRESSIVI BIDIREZIONALI (No generatore come richiesto) -->
+        <div class="examples-container">
+          <div class="examples-header">
+            <h3><span>🧪</span> 3 Esempi Progressivi Bidirezionali</h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Code Point Unicode ↔ Sequenza Byte UTF-8</span>
+          </div>
+
+          <!-- Esempio 1: Base -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 1: Lettera ASCII ('Z' - U+005A)</span>
+              <span class="lvl-badge lvl-easy">Facile (1 Byte)</span>
+            </div>
+            <div class="bi-dir">
+              <div>Unicode: <strong>U+005A ('Z')</strong></div>
+              <div class="arrow">⇄</div>
+              <div>UTF-8: <strong>0x5A</strong> (Bin: <strong>01011010₂</strong>)</div>
+            </div>
+            <ol class="step-list">
+              <li>Poiché il codice è &le; 127 (0x7F), si usa il template a 1 byte: <code>0xxxxxxx</code>.</li>
+              <li>Il codice binario di 90 è <code>1011010</code>. Inserito nello schema diventa <code>01011010</code>. Identico ad ASCII!</li>
+            </ol>
+          </div>
+
+          <!-- Esempio 2: Medio -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 2: Lettera accentata ('è' - U+00E8)</span>
+              <span class="lvl-badge lvl-med">Intermedio (2 Byte)</span>
+            </div>
+            <div class="bi-dir">
+              <div>Unicode: <strong>U+00E8 ('è')</strong></div>
+              <div class="arrow">⇄</div>
+              <div>UTF-8: <strong>0xC3 0xA8</strong> (2 byte in memoria)</div>
+            </div>
+            <ol class="step-list">
+              <li>Code Point 0x00E8 in binario: <code>00000000 11101000</code>.</li>
+              <li>Richiede 2 byte: template <code>110xxxxx 10xxxxxx</code> (11 bit utili totali).</li>
+              <li>Prendi gli ultimi 6 bit (<code>101000</code>) → secondo byte: <code>10101000</code> (0xA8).</li>
+              <li>Prendi i 5 bit precedenti (<code>00011</code>) → primo byte: <code>11000011</code> (0xC3).</li>
+              <li>Risultato in C: la lettera 'è' occupa 2 celle di memoria consecutive: <code>0xC3</code> e <code>0xA8</code>.</li>
+            </ol>
+          </div>
+
+          <!-- Esempio 3: Avanzato -->
+          <div class="example-item">
+            <div class="example-title">
+              <span>Esempio 3: Simbolo Valuta Euro ('€' - U+20AC)</span>
+              <span class="lvl-badge lvl-adv">Avanzato (3 Byte)</span>
+            </div>
+            <div class="bi-dir">
+              <div>Unicode: <strong>U+20AC ('€')</strong></div>
+              <div class="arrow">⇄</div>
+              <div>UTF-8: <strong>0xE2 0x82 0xAC</strong> (3 byte in memoria)</div>
+            </div>
+            <ol class="step-list">
+              <li>Code point 0x20AC in binario a 16 bit: <code>0010 0000 1010 1100</code>.</li>
+              <li>Template a 3 byte: <code>1110xxxx 10xxxxxx 10xxxxxx</code>.</li>
+              <li>Byte 3: <code>10</code> + <code>101100</code> = <code>10101100₂</code> (0xAC).</li>
+              <li>Byte 2: <code>10</code> + <code>000010</code> = <code>10000010₂</code> (0x82).</li>
+              <li>Byte 1: <code>1110</code> + <code>0010</code> = <code>11100010₂</code> (0xE2).</li>
+            </ol>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- WIDGET SINTESI: BIT INSPECTOR INTERATTIVO -->
+    <!-- ========================================== -->
+    <section id="bitInspectorSec" class="section-card" style="border-color: rgba(56, 189, 248, 0.4);">
+      <div class="section-header">
+        <div class="section-title">
+          <span>🔬</span> Bit Inspector Interattivo (8 bit)
+        </div>
+        <span class="badge-c">Live ALU Register (uint8_t / int8_t)</span>
+      </div>
+      <div class="section-body">
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          Clicca sui singoli bit per alternare 0 e 1: osserva come la medesima sequenza di bit viene interpretata in C a seconda del tipo di dato!
+        </p>
+        <div class="bit-visualizer">
+          <div class="bit-grid" id="bitInspectorGrid">
+            <!-- Popolato via JS -->
+          </div>
+          <div class="bit-results">
+            <div class="bit-res-item">
+              <span>Esadecimale (%x)</span>
+              <strong id="resHex">0x00</strong>
+            </div>
+            <div class="bit-res-item">
+              <span>Unsigned (%u)</span>
+              <strong id="resUnsigned">0</strong>
+            </div>
+            <div class="bit-res-item">
+              <span>Signed C2 (%d)</span>
+              <strong id="resSigned">0</strong>
+            </div>
+            <div class="bit-res-item">
+              <span>Carattere (%c)</span>
+              <strong id="resChar">NUL</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TABELLA DI RIEPILOGO FINALE -->
+    <!-- ========================================== -->
+    <section id="riepilogo" class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>📊</span> Tabella di Riepilogo Generale dei Sistemi di Codifica
+        </div>
+        <span class="badge-c">Sintesi Architetturale</span>
+      </div>
+      <div class="section-body">
+        <p style="font-size: 0.9rem; color: var(--text-muted);">
+          Quadro comparativo conclusivo delle codifiche fondamentali di numeri e caratteri, con i relativi campi applicativi e comportamenti chiave nell'hardware e nel software.
+        </p>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Categoria</th>
+                <th>Sistema / Standard</th>
+                <th>Ambito d'uso principale</th>
+                <th>Caratteristica chiave</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Numeri interi</strong></td>
+                <td><code style="color: #38bdf8; font-weight: bold;">Complemento a 2</code></td>
+                <td>CPU, GPU, ALU, tipi <code>int</code> in C/C++</td>
+                <td>Calcolo aritmetico unificato (A - B = A + ~B + 1), assenza del doppio zero.</td>
+              </tr>
+              <tr>
+                <td><strong>Numeri reali</strong></td>
+                <td><code style="color: #4ade80; font-weight: bold;">IEEE 754 (Float32 / Double64)</code></td>
+                <td>FPU, calcolo scientifico, grafica 3D</td>
+                <td>Notazione scientifica binaria con segno, esponente polarizzato (bias) e mantissa.</td>
+              </tr>
+              <tr>
+                <td><strong>Numeri esatti</strong></td>
+                <td><code style="color: #fbbf24; font-weight: bold;">BCD / Fixed-point</code></td>
+                <td>Sistemi finanziari, registratori di cassa</td>
+                <td>Elimina gli errori di approssimazione decimale (ogni cifra = 4 bit).</td>
+              </tr>
+              <tr>
+                <td><strong>Testo essenziale</strong></td>
+                <td><code style="color: #f472b6; font-weight: bold;">ASCII</code></td>
+                <td>Protocolli di rete (HTTP, SMTP), file config</td>
+                <td>Codifica a 7 bit (0..127), base e radice di tutto il software moderno.</td>
+              </tr>
+              <tr>
+                <td><strong>Testo universale</strong></td>
+                <td><code style="color: #38bdf8; font-weight: bold;">UTF-8</code></td>
+                <td>Web (&gt;98%), file sorgenti C/Linux, JSON</td>
+                <td>Lunghezza variabile (1-4 byte), retrocompatibilità al 100% con ASCII.</td>
+              </tr>
+              <tr>
+                <td><strong>Testo in memoria</strong></td>
+                <td><code style="color: #a78bfa; font-weight: bold;">UTF-16</code></td>
+                <td>Runtime Java, .NET, motori JavaScript, Win32</td>
+                <td>Blocchi minimi a 16 bit con coppie surrogate per caratteri rari.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // GESTIONE MODALITÀ (Proiezione vs Approfondimento)
+    function setMode(mode) {
+      const btnProj = document.getElementById('btnModeProj');
+      const btnDeep = document.getElementById('btnModeDeep');
+      if (mode === 'projection') {
+        document.body.classList.remove('mode-deep');
+        document.body.classList.add('mode-projection');
+        btnProj.classList.add('active');
+        btnDeep.classList.remove('active');
+      } else {
+        document.body.classList.remove('mode-projection');
+        document.body.classList.add('mode-deep');
+        btnDeep.classList.add('active');
+        btnProj.classList.remove('active');
+      }
+    }
+
+    // ==========================================
+    // BIT INSPECTOR INTERATTIVO
+    // ==========================================
+    let currentBits = [0, 0, 0, 0, 0, 0, 0, 0]; // bit 7 .. bit 0
+    const bitWeightsUnsigned = [128, 64, 32, 16, 8, 4, 2, 1];
+
+    function initBitInspector() {
+      const grid = document.getElementById('bitInspectorGrid');
+      grid.innerHTML = '';
+      for (let i = 0; i < 8; i++) {
+        const bitIdx = 7 - i;
+        const col = document.createElement('div');
+        col.className = 'bit-cell';
+        col.innerHTML = `
+          <div class="bit-idx">b${bitIdx}</div>
+          <button class="bit-btn" id="bitBtn${i}" onclick="toggleBit(${i})">0</button>
+          <div class="bit-weights">${bitIdx === 7 ? '-128/+128' : bitWeightsUnsigned[i]}</div>
+        `;
+        grid.appendChild(col);
+      }
+      updateBitInspector();
+    }
+
+    function toggleBit(idx) {
+      currentBits[idx] = currentBits[idx] === 0 ? 1 : 0;
+      const btn = document.getElementById(`bitBtn${idx}`);
+      if (currentBits[idx] === 1) {
+        btn.classList.add('active');
+        btn.innerText = '1';
+      } else {
+        btn.classList.remove('active');
+        btn.innerText = '0';
+      }
+      updateBitInspector();
+    }
+
+    function updateBitInspector() {
+      let unsignedVal = 0;
+      for (let i = 0; i < 8; i++) {
+        if (currentBits[i] === 1) {
+          unsignedVal += bitWeightsUnsigned[i];
+        }
+      }
+
+      // Signed C2: se bit 7 è 1, sottrai 256
+      let signedVal = unsignedVal >= 128 ? unsignedVal - 256 : unsignedVal;
+
+      // Hex
+      let hexVal = '0x' + unsignedVal.toString(16).toUpperCase().padStart(2, '0');
+
+      // Char
+      let charVal = 'non stampabile';
+      if (unsignedVal === 0) charVal = '\\0 (NUL)';
+      else if (unsignedVal === 10) charVal = '\\n (LF)';
+      else if (unsignedVal === 13) charVal = '\\r (CR)';
+      else if (unsignedVal === 32) charVal = "' ' (Spazio)";
+      else if (unsignedVal >= 33 && unsignedVal <= 126) charVal = `'${String.fromCharCode(unsignedVal)}'`;
+      else if (unsignedVal >= 128) charVal = `Ext (0x${unsignedVal.toString(16).toUpperCase()})`;
+
+      document.getElementById('resHex').innerText = hexVal;
+      document.getElementById('resUnsigned').innerText = unsignedVal;
+      document.getElementById('resSigned').innerText = signedVal;
+      document.getElementById('resChar').innerText = charVal;
+    }
+
+    // ==========================================
+    // TRAINER GENERATORI DI ESERCIZI (Cat 2, 3, 4)
+    // ==========================================
+
+    const state = {
+      cat2: { diff: 'easy', currentTarget: 0, sol: '', isHexTarget: false },
+      cat3: { diff: 'easy', currentTarget: 0, sol: '', isBinToDec: false },
+      cat4: { diff: 'easy', currentVal: 0, targetExp: 0, sol: '' }
+    };
+
+    function setTrainerDiff(cat, diff) {
+      state[cat].diff = diff;
+      const container = document.getElementById(`trainer${cat.charAt(0).toUpperCase() + cat.slice(1)}`);
+      const buttons = container.querySelectorAll('.diff-btn');
+      buttons.forEach(b => b.classList.remove('active'));
+      const activeBtn = Array.from(buttons).find(b => b.getAttribute('onclick').includes(`'${diff}'`));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (cat === 'cat2') newExerciseCat2();
+      if (cat === 'cat3') newExerciseCat3();
+      if (cat === 'cat4') newExerciseCat4();
+    }
+
+    function toggleSolution(cat) {
+      const el = document.getElementById(`${cat}Solution`);
+      el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+
+    // --- CAT 2: UNSIGNED ---
+    function newExerciseCat2() {
+      const promptText = document.getElementById('cat2PromptText');
+      const promptVal = document.getElementById('cat2PromptVal');
+      const input = document.getElementById('cat2Input');
+      const fb = document.getElementById('cat2Feedback');
+      const sol = document.getElementById('cat2Solution');
+      fb.className = 'trainer-feedback';
+      sol.style.display = 'none';
+      input.value = '';
+
+      if (state.cat2.diff === 'easy') {
+        // Valore tra 5 e 250 -> convertire in binario 8 bit
+        state.cat2.currentTarget = Math.floor(Math.random() * 240) + 10;
+        state.cat2.isHexTarget = false;
+        promptText.innerText = 'Converti il seguente numero decimale in binario a 8 bit esatti:';
+        promptVal.innerText = state.cat2.currentTarget;
+        state.cat2.sol = state.cat2.currentTarget.toString(2).padStart(8, '0');
+        sol.innerHTML = `<strong>Soluzione:</strong> ${state.cat2.currentTarget} in binario = <code>${state.cat2.sol}</code>.<br>
+        Scomposizione: ${explainPowers(state.cat2.currentTarget)}`;
+      } else if (state.cat2.diff === 'med') {
+        // Da binario/decimale a Esadecimale
+        state.cat2.currentTarget = Math.floor(Math.random() * 240) + 10;
+        state.cat2.isHexTarget = true;
+        const binStr = state.cat2.currentTarget.toString(2).padStart(8, '0');
+        promptText.innerText = 'Converti il seguente byte binario in notazione Esadecimale (es. 0x2F o 2F):';
+        promptVal.innerText = binStr;
+        state.cat2.sol = state.cat2.currentTarget.toString(16).toUpperCase();
+        sol.innerHTML = `<strong>Soluzione:</strong> <code>${binStr}</code> raggruppato in nibble da 4 bit:<br>
+        - Nibble alto: <code>${binStr.slice(0, 4)}</code> = ${parseInt(binStr.slice(0, 4), 2).toString(16).toUpperCase()}<br>
+        - Nibble basso: <code>${binStr.slice(4)}</code> = ${parseInt(binStr.slice(4), 2).toString(16).toUpperCase()}<br>
+        Hex finale: <code>0x${state.cat2.sol}</code>.`;
+      } else {
+        // Difficile: 16 bit unsigned (uint16_t)
+        state.cat2.currentTarget = Math.floor(Math.random() * 50000) + 500;
+        state.cat2.isHexTarget = false;
+        promptText.innerText = 'Converti il seguente intero a 16 bit in Esadecimale (es. 0x1A2B o 1A2B):';
+        promptVal.innerText = state.cat2.currentTarget;
+        state.cat2.sol = state.cat2.currentTarget.toString(16).toUpperCase().padStart(4, '0');
+        sol.innerHTML = `<strong>Soluzione:</strong> ${state.cat2.currentTarget} = <code>0x${state.cat2.sol}</code>.`;
+      }
+    }
+
+    function verifyCat2() {
+      const input = document.getElementById('cat2Input').value.trim().toUpperCase().replace('0X', '');
+      const fb = document.getElementById('cat2Feedback');
+      const expected = state.cat2.sol.toUpperCase().replace('0X', '');
+
+      if (input === expected) {
+        fb.className = 'trainer-feedback correct';
+        fb.innerHTML = '🎉 <strong>Corretto!</strong> Ottima conversione!';
+      } else {
+        fb.className = 'trainer-feedback wrong';
+        fb.innerHTML = `❌ <strong>Non esatto.</strong> Risposta inserita: <code>${input || '(vuoto)'}</code>. Riprova o consulta i passaggi!`;
+      }
+    }
+
+    function explainPowers(val) {
+      let temp = val;
+      let parts = [];
+      const powers = [128, 64, 32, 16, 8, 4, 2, 1];
+      for (let p of powers) {
+        if (temp >= p) {
+          parts.push(p);
+          temp -= p;
+        }
+      }
+      return parts.join(' + ');
+    }
+
+    // --- CAT 3: COMPLEMENTO A 2 ---
+    function newExerciseCat3() {
+      const promptText = document.getElementById('cat3PromptText');
+      const promptVal = document.getElementById('cat3PromptVal');
+      const input = document.getElementById('cat3Input');
+      const fb = document.getElementById('cat3Feedback');
+      const sol = document.getElementById('cat3Solution');
+      fb.className = 'trainer-feedback';
+      sol.style.display = 'none';
+      input.value = '';
+
+      if (state.cat3.diff === 'easy') {
+        // Numero negativo piccolo (-1 .. -20) -> 8 bit C2
+        state.cat3.currentTarget = -(Math.floor(Math.random() * 19) + 1);
+        state.cat3.isBinToDec = false;
+        promptText.innerText = 'Calcola la codifica in Complemento a 2 su 8 bit per il numero decimale:';
+        promptVal.innerText = state.cat3.currentTarget;
+        const pos = Math.abs(state.cat3.currentTarget);
+        const posBin = pos.toString(2).padStart(8, '0');
+        const c2Val = (256 + state.cat3.currentTarget).toString(2).padStart(8, '0');
+        state.cat3.sol = c2Val;
+        sol.innerHTML = `<strong>Soluzione:</strong><br>
+        1. Modulo positivo (+${pos}) a 8 bit: <code>${posBin}</code><br>
+        2. Inversione bit (NOT): <code>${posBin.split('').map(b => b === '0'?'1':'0').join('')}</code><br>
+        3. Aggiunta di 1: <code>${c2Val}</code> (Hex: 0x${(256 + state.cat3.currentTarget).toString(16).toUpperCase()}).`;
+      } else if (state.cat3.diff === 'med') {
+        // Numero negativo su tutto l'intervallo 8 bit (-21 .. -128)
+        state.cat3.currentTarget = -(Math.floor(Math.random() * 107) + 21);
+        state.cat3.isBinToDec = false;
+        promptText.innerText = 'Calcola il Complemento a 2 su 8 bit per il valore:';
+        promptVal.innerText = state.cat3.currentTarget;
+        const c2Val = (256 + state.cat3.currentTarget).toString(2).padStart(8, '0');
+        state.cat3.sol = c2Val;
+        sol.innerHTML = `<strong>Soluzione:</strong> <code>${c2Val}</code>.<br>
+        Verifica pesi: -128 + (${parseInt(c2Val.slice(1), 2)}) = ${state.cat3.currentTarget}.`;
+      } else {
+        // Difficile: Da Binario C2 a Decimale signed (inverso)
+        const randNeg = -(Math.floor(Math.random() * 125) + 1);
+        const binStr = (256 + randNeg).toString(2).padStart(8, '0');
+        state.cat3.currentTarget = randNeg;
+        state.cat3.isBinToDec = true;
+        promptText.innerText = 'Quale valore decimale con segno (int8_t) rappresenta questa stringa in Complemento a 2?';
+        promptVal.innerText = binStr;
+        state.cat3.sol = randNeg.toString();
+        sol.innerHTML = `<strong>Soluzione:</strong> ${randNeg}.<br>
+        Il primo bit è 1 (segno negativo). Applicando la negazione inversa (~bit + 1) si ottiene il valore assoluto ${Math.abs(randNeg)}.`;
+      }
+    }
+
+    function verifyCat3() {
+      const input = document.getElementById('cat3Input').value.trim();
+      const fb = document.getElementById('cat3Feedback');
+      if (input === state.cat3.sol) {
+        fb.className = 'trainer-feedback correct';
+        fb.innerHTML = '🎉 <strong>Corretto!</strong> Complemento a due perfettamente calcolato!';
+      } else {
+        fb.className = 'trainer-feedback wrong';
+        fb.innerHTML = `❌ <strong>Non corretto.</strong> Valore atteso: <code>${state.cat3.sol}</code>. Consulta la spiegazione!`;
+      }
+    }
+
+    // --- CAT 4: IEEE 754 ---
+    const ieeeBank = [
+      { val: 1.5, s: '0', expReal: 0, expPol: 127, mant: '10000000000000000000000', hex: '3FC00000' },
+      { val: -2.0, s: '1', expReal: 1, expPol: 128, mant: '00000000000000000000000', hex: 'C0000000' },
+      { val: 3.5, s: '0', expReal: 1, expPol: 128, mant: '11000000000000000000000', hex: '40600000' },
+      { val: -6.5, s: '1', expReal: 2, expPol: 129, mant: '10100000000000000000000', hex: 'C0D00000' },
+      { val: 0.75, s: '0', expReal: -1, expPol: 126, mant: '10000000000000000000000', hex: '3F400000' },
+      { val: -10.25, s: '1', expReal: 3, expPol: 130, mant: '01001000000000000000000', hex: 'C1240000' }
+    ];
+
+    function newExerciseCat4() {
+      const promptText = document.getElementById('cat4PromptText');
+      const promptVal = document.getElementById('cat4PromptVal');
+      const input = document.getElementById('cat4Input');
+      const fb = document.getElementById('cat4Feedback');
+      const sol = document.getElementById('cat4Solution');
+      fb.className = 'trainer-feedback';
+      sol.style.display = 'none';
+      input.value = '';
+
+      const ex = ieeeBank[Math.floor(Math.random() * ieeeBank.length)];
+      state.cat4.currentVal = ex.val;
+
+      if (state.cat4.diff === 'easy') {
+        promptText.innerText = 'Per il seguente float, calcola il valore dell\'Esponente Polarizzato memorizzato (da 0 a 255):';
+        promptVal.innerText = (ex.val > 0 ? '+' : '') + ex.val;
+        state.cat4.sol = ex.expPol.toString();
+        sol.innerHTML = `<strong>Soluzione:</strong> ${ex.expPol}.<br>
+        Normalizzazione: $|${ex.val}|$ in binario ha potenza $2^{${ex.expReal}}$.<br>
+        Aggiungendo il bias: ${ex.expReal} + 127 = <strong>${ex.expPol}</strong> (Bin: <code>${ex.expPol.toString(2).padStart(8, '0')}</code>).`;
+      } else if (state.cat4.diff === 'med') {
+        promptText.innerText = 'Qual è il bit di Segno (0 o 1) e l\'Esponente polarizzato a 8 bit (es. 0 10000000)?';
+        promptVal.innerText = (ex.val > 0 ? '+' : '') + ex.val;
+        state.cat4.sol = `${ex.s} ${ex.expPol.toString(2).padStart(8, '0')}`;
+        sol.innerHTML = `<strong>Soluzione:</strong> <code>${state.cat4.sol}</code> (Segno=${ex.s}, Esp=${ex.expPol}).`;
+      } else {
+        promptText.innerText = 'Determina la rappresentazione Esadecimale a 32 bit completa del float IEEE 754 (es. 40600000):';
+        promptVal.innerText = (ex.val > 0 ? '+' : '') + ex.val;
+        state.cat4.sol = ex.hex;
+        sol.innerHTML = `<strong>Soluzione:</strong> <code>0x${ex.hex}</code>.<br>
+        Campi: S=${ex.s} | Esp=${ex.expPol.toString(2).padStart(8, '0')} | Mantissa=${ex.mant.slice(0, 8)}...`;
+      }
+    }
+
+    function verifyCat4() {
+      const input = document.getElementById('cat4Input').value.trim().toUpperCase().replace('0X', '');
+      const fb = document.getElementById('cat4Feedback');
+      const expected = state.cat4.sol.toUpperCase().replace('0X', '');
+
+      if (input === expected) {
+        fb.className = 'trainer-feedback correct';
+        fb.innerHTML = '🎉 <strong>Esatto!</strong> Analisi IEEE 754 impeccabile!';
+      } else {
+        fb.className = 'trainer-feedback wrong';
+        fb.innerHTML = `❌ <strong>Non corretto.</strong> Valore atteso: <code>${state.cat4.sol}</code>. Consulta la spiegazione passo-passo!`;
+      }
+    }
+
+    // Inizializzazione al caricamento
+    window.addEventListener('DOMContentLoaded', () => {
+      initBitInspector();
+      newExerciseCat2();
+      newExerciseCat3();
+      newExerciseCat4();
+    });
+  </script>
+</body>
+</html>
