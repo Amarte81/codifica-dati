@@ -749,6 +749,30 @@
       }
     }
 
+    /* Introduzioni brevi (solo proiezione) e spiegazioni estese (solo dispensa) */
+    .intro-dense {
+      display: none;
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 0.8rem 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    body.mode-projection .intro-dense { display: block; }
+
+    .explain-long {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+    }
+    .explain-long h3 { color: var(--accent); margin-bottom: 0.75rem; }
+    .explain-long h4 { color: var(--c-code); margin: 1rem 0 0.35rem; font-size: 0.98rem; }
+    .explain-long p, .explain-long li { color: #cbd5e1; font-size: 0.95rem; margin-bottom: 0.6rem; }
+    .explain-long ul { padding-left: 1.3rem; margin-bottom: 0.6rem; }
+
     /* Mobile Responsive */
     @media (max-width: 768px) {
       .header-container {
@@ -821,6 +845,23 @@
         <span class="badge-c">C Literals: 0b, 0, 0x</span>
       </div>
       <div class="section-body">
+        <div class="intro-dense">Un numero è una sequenza di cifre il cui peso dipende dalla posizione e dalla base: il computer lavora in base 2, noi usiamo la base 16 per scriverla in modo compatto.</div>
+        <div class="discursive-content explain-long">
+          <h3>📖 Spiegazione estesa: cos'è una base numerica</h3>
+          <p>Un sistema numerico <strong>posizionale</strong> rappresenta un valore come somma di cifre moltiplicate per potenze della <em>base</em>. Nel sistema decimale (base 10) il numero <code>345</code> significa 3×10² + 4×10¹ + 5×10⁰. La stessa idea vale per qualsiasi base <em>b</em>: la cifra in posizione <em>i</em> (contando da destra, partendo da 0) vale <em>cifra × bⁱ</em>.</p>
+          <h4>Perché il computer usa il binario</h4>
+          <p>I circuiti elettronici distinguono in modo affidabile due soli stati (tensione bassa/alta, passa/non passa corrente). Ogni stato è un <strong>bit</strong> (0 o 1). Con <em>n</em> bit si ottengono 2ⁿ combinazioni diverse: 8 bit (un byte) ne danno 256.</p>
+          <h4>Perché esadecimale e ottale</h4>
+          <p>Leggere lunghe sequenze di 0 e 1 è faticoso e soggetto a errori. Poiché 16 = 2⁴, ogni cifra esadecimale corrisponde esattamente a 4 bit: il byte <code>11010110</code> si spezza in <code>1101</code> e <code>0110</code>, quindi <code>0xD6</code>. L'ottale (8 = 2³) raggruppa invece i bit a tre a tre.</p>
+          <h4>Conversioni fondamentali</h4>
+          <ul>
+            <li><strong>Binario → decimale:</strong> somma i pesi (1, 2, 4, 8, 16…) delle posizioni in cui c'è un 1.</li>
+            <li><strong>Decimale → binario:</strong> dividi ripetutamente per 2 e leggi i resti dal basso verso l'alto (oppure sottrai le potenze di 2 più grandi possibili).</li>
+            <li><strong>Binario ↔ esadecimale:</strong> raggruppa i bit a gruppi di 4 partendo da destra e sostituisci ogni gruppo con la sua cifra.</li>
+          </ul>
+          <h4>In linguaggio C</h4>
+          <p>Il compilatore riconosce i prefissi: <code>0x1F</code> (esadecimale), <code>017</code> (ottale: attenzione, uno zero iniziale cambia il significato!) e, come estensione ormai comune (standard C23), <code>0b1010</code> (binario). Con <code>printf</code> si usano <code>%d</code> (decimale), <code>%x</code>/<code>%X</code> (esadecimale) e <code>%o</code> (ottale).</p>
+        </div>
         <!-- Schede Dense da Proiezione -->
         <div class="dense-grid">
           <div class="dense-box highlight">
@@ -876,6 +917,17 @@
         <span class="badge-c">unsigned int, uint8_t, %u</span>
       </div>
       <div class="section-body">
+        <div class="intro-dense">Interi senza segno: tutti gli n bit sono pesi positivi, valori da 0 a 2ⁿ−1; oltre il massimo si ricomincia da 0.</div>
+        <div class="discursive-content explain-long">
+          <h3>📖 Spiegazione estesa: come si rappresenta un intero non negativo</h3>
+          <p>La rappresentazione <strong>senza segno</strong> (unsigned) è la più semplice: ogni bit ha un peso pari a una potenza di 2 e il valore del numero è la somma dei pesi dei bit uguali a 1. In un byte i pesi, da sinistra a destra, sono 128, 64, 32, 16, 8, 4, 2, 1; il valore massimo è quindi 255 (tutti i bit a 1).</p>
+          <h4>Intervalli di valori</h4>
+          <p>Con <em>n</em> bit si rappresentano i numeri da 0 a 2ⁿ−1: 0…255 con 8 bit, 0…65 535 con 16 bit, 0…4 294 967 295 con 32 bit. Non esistono numeri negativi: se serve il segno si usa il complemento a due (categoria successiva).</p>
+          <h4>Somma e riporto</h4>
+          <p>L'addizione binaria funziona come quella in colonna: 1+1 = 10 (scrivo 0, riporto 1). Se il riporto esce dal bit più a sinistra il risultato non entra più nello spazio disponibile: si ha <strong>overflow</strong> (o carry), e il risultato è corretto solo modulo 2ⁿ. Esempio a 8 bit: 250 + 10 = 260, ma 260 mod 256 = 4.</p>
+          <h4>In linguaggio C</h4>
+          <p>I tipi <code>unsigned char</code>, <code>unsigned short</code>, <code>unsigned int</code> (o <code>uint8_t</code>, <code>uint16_t</code>, <code>uint32_t</code> di <code>&lt;stdint.h&gt;</code>) usano questa codifica. Per gli unsigned lo standard garantisce il comportamento modulare, quindi il wraparound è definito. Si stampano con <code>%u</code> (decimale) e <code>%x</code> (esadecimale). Una conseguenza pratica: una variabile unsigned è sempre ≥ 0, quindi un ciclo con condizione <code>i &gt;= 0</code> non termina mai.</p>
+        </div>
 
         <!-- DENSE PROIEZIONE -->
         <div class="dense-grid">
@@ -1020,6 +1072,26 @@
         <span class="badge-c">int, int8_t, int16_t, %d</span>
       </div>
       <div class="section-body">
+        <div class="intro-dense">Per avere numeri negativi si usa il complemento a due: il bit più a sinistra pesa −2ⁿ⁻¹; si nega un numero invertendo i bit e sommando 1.</div>
+        <div class="discursive-content explain-long">
+          <h3>📖 Spiegazione estesa: numeri negativi e complemento a due</h3>
+          <p>Per rappresentare numeri negativi serve riservare parte dei bit al segno. Esistono vari metodi (modulo e segno, complemento a uno), ma i computer moderni usano quasi universalmente il <strong>complemento a due</strong>, perché permette di eseguire somme e sottrazioni con lo stesso identico circuito.</p>
+          <h4>Come si interpreta</h4>
+          <p>È una codifica posizionale in cui il bit più significativo ha peso <em>negativo</em>: in un byte i pesi sono −128, 64, 32, 16, 8, 4, 2, 1. Così <code>11111011</code> vale −128+64+32+16+8+2+1 = −5. Se il bit più a sinistra è 0 il numero è positivo (o zero), se è 1 è negativo.</p>
+          <h4>Come si calcola l'opposto di un numero</h4>
+          <ol>
+            <li>Scrivi il valore assoluto in binario sul numero di bit voluto (es. 5 → <code>00000101</code>).</li>
+            <li>Inverti tutti i bit (<code>11111010</code>).</li>
+            <li>Somma 1 (<code>11111011</code> = −5).</li>
+          </ol>
+          <p>La stessa procedura converte anche da negativo a positivo.</p>
+          <h4>Intervallo e anomalie</h4>
+          <p>Con <em>n</em> bit si coprono i valori da −2ⁿ⁻¹ a +2ⁿ⁻¹−1: con 8 bit da −128 a +127. L'intervallo è asimmetrico: esiste −128 ma non +128, quindi negare −128 restituisce ancora −128. Esiste un solo zero (<code>00000000</code>).</p>
+          <h4>Estensione di segno</h4>
+          <p>Passando da meno bit a più bit (ad esempio da 8 a 16) bisogna replicare il bit di segno a sinistra: −2 passa da <code>11111110</code> a <code>1111111111111110</code>. Aggiungere zeri trasformerebbe il numero in +254.</p>
+          <h4>In linguaggio C</h4>
+          <p>I tipi <code>int</code>, <code>short</code>, <code>int8_t</code>… usano il complemento a due su tutte le piattaforme comuni. Si stampano con <code>%d</code>. Attenzione: l'overflow di un tipo <em>con segno</em> è comportamento indefinito per lo standard C (diversamente dagli unsigned), e mescolare signed e unsigned in un confronto può dare risultati sorprendenti.</p>
+        </div>
 
         <!-- DENSE PROIEZIONE -->
         <div class="dense-grid">
@@ -1164,6 +1236,29 @@
         <span class="badge-c">float (32 bit), double (64 bit), %f</span>
       </div>
       <div class="section-body">
+        <div class="intro-dense">I numeri reali si memorizzano in virgola mobile (IEEE 754): segno, esponente con bias e mantissa. Ampio intervallo, precisione limitata.</div>
+        <div class="discursive-content explain-long">
+          <h3>📖 Spiegazione estesa: la virgola mobile IEEE 754</h3>
+          <p>Per rappresentare numeri molto grandi o molto piccoli (e con la parte frazionaria) si usa una forma simile alla notazione scientifica, ma in base 2: <strong>(−1)^S × 1.M × 2^(E−bias)</strong>. Lo standard <em>IEEE 754</em> definisce come distribuire i bit.</p>
+          <h4>I tre campi del float a 32 bit</h4>
+          <ul>
+            <li><strong>Segno S (1 bit):</strong> 0 positivo, 1 negativo.</li>
+            <li><strong>Esponente E (8 bit):</strong> memorizzato con <em>bias</em> 127, cioè E = esponente reale + 127. Questo permette di avere esponenti negativi senza un bit di segno dedicato.</li>
+            <li><strong>Mantissa M (23 bit):</strong> la parte frazionaria dopo la virgola. Il numero è sempre normalizzato nella forma 1.xxx, quindi l'1 iniziale è <em>implicito</em> e non si memorizza.</li>
+          </ul>
+          <p>Il <code>double</code> segue la stessa idea con 1 + 11 + 52 bit e bias 1023.</p>
+          <h4>Come si converte un numero (es. 12,375)</h4>
+          <ol>
+            <li>Converti la parte intera (12 = <code>1100</code>) e la frazione (0,375 = <code>0,011</code>, moltiplicando per 2 e prendendo la parte intera).</li>
+            <li>Scrivi <code>1100,011</code> e normalizza: <code>1,100011 × 2³</code>.</li>
+            <li>Esponente memorizzato = 3 + 127 = 130 = <code>10000010</code>.</li>
+            <li>Mantissa = <code>10001100000000000000000</code>; segno = 0.</li>
+          </ol>
+          <h4>Limiti e casi speciali</h4>
+          <p>Molte frazioni decimali (come 0,1) sono periodiche in binario e vengono quindi <strong>approssimate</strong>: <code>0.1 + 0.2 == 0.3</code> in C è falso. Un <code>float</code> ha circa 7 cifre decimali significative, un <code>double</code> circa 15–16. Esponente tutto a 1 con mantissa 0 indica ±infinito, con mantissa diversa da 0 indica NaN (non un numero); esponente 0 serve per lo zero e i numeri denormalizzati.</p>
+          <h4>In linguaggio C</h4>
+          <p>Si usano i tipi <code>float</code> e <code>double</code>, con <code>%f</code> (o <code>%e</code>, <code>%g</code>) in <code>printf</code>. Mai confrontare due reali con <code>==</code>: si confronta la differenza con una piccola tolleranza.</p>
+        </div>
 
         <!-- DENSE PROIEZIONE -->
         <div class="dense-grid">
@@ -1331,6 +1426,23 @@
         <span class="badge-c">char, 'A' == 65, %c</span>
       </div>
       <div class="section-body">
+        <div class="intro-dense">Ogni carattere ha un codice numerico: ASCII usa 7 bit (128 simboli), le estensioni a 8 bit ne aggiungono altri 128 ma sono incompatibili tra loro.</div>
+        <div class="discursive-content explain-long">
+          <h3>📖 Spiegazione estesa: come si codifica il testo</h3>
+          <p>Il computer sa memorizzare solo numeri, quindi per il testo serve una <strong>tabella di corrispondenza</strong> tra caratteri e codici. La più diffusa è l'<strong>ASCII</strong> (American Standard Code for Information Interchange), che usa 7 bit e definisce 128 codici.</p>
+          <h4>Organizzazione della tabella ASCII</h4>
+          <ul>
+            <li><strong>0–31 e 127:</strong> caratteri di controllo non stampabili (NUL = 0, tabulazione = 9, a capo LF = 10, CR = 13…).</li>
+            <li><strong>32:</strong> lo spazio.</li>
+            <li><strong>48–57:</strong> le cifre '0'…'9'. Attenzione: il carattere '5' ha codice 53, non 5.</li>
+            <li><strong>65–90:</strong> le lettere maiuscole 'A'…'Z'.</li>
+            <li><strong>97–122:</strong> le lettere minuscole 'a'…'z'. Differiscono dalle maiuscole di 32, cioè dal solo bit 5.</li>
+          </ul>
+          <h4>ASCII esteso</h4>
+          <p>Poiché un byte ha 8 bit, restavano liberi altri 128 codici (128–255). Ogni paese li ha usati per le proprie lettere accentate e simboli, dando origine a tabelle diverse (ISO 8859-1 «Latin-1» per l'Europa occidentale, ISO 8859-5 per il cirillico, Windows-1252…). Lo stesso byte può quindi significare caratteri diversi a seconda della tabella: aprire un file con la codifica sbagliata produce testo illeggibile (<em>mojibake</em>). Fu uno dei motivi per cui nacque Unicode.</p>
+          <h4>In linguaggio C</h4>
+          <p>Il tipo <code>char</code> è un piccolo intero (di solito 1 byte): <code>'A'</code> è semplicemente il numero 65. Perciò si può fare aritmetica sui caratteri: <code>c - '0'</code> converte una cifra-carattere nel suo valore, <code>c + 1</code> passa alla lettera successiva, <code>c | 0x20</code> rende minuscola una lettera maiuscola. Una stringa è un array di <code>char</code> terminato dal byte nullo <code>'\0'</code> (codice 0). Con <code>printf</code>: <code>%c</code> stampa il carattere, <code>%d</code> il suo codice. Il tipo <code>char</code> può essere signed o unsigned a seconda della piattaforma: per byte grezzi conviene <code>unsigned char</code>.</p>
+        </div>
 
         <!-- DENSE PROIEZIONE -->
         <div class="dense-grid">
@@ -1453,6 +1565,28 @@
         <span class="badge-c">Multibyte char[], Code Points</span>
       </div>
       <div class="section-body">
+        <div class="intro-dense">Unicode dà un codice a ogni carattere del mondo; UTF-8 lo scrive con 1–4 byte, ed è identico all'ASCII per i primi 128 simboli.</div>
+        <div class="discursive-content explain-long">
+          <h3>📖 Spiegazione estesa: Unicode e UTF-8</h3>
+          <p><strong>Unicode</strong> è uno standard che assegna a ogni carattere di ogni sistema di scrittura (latino, greco, cirillico, arabo, cinese, simboli matematici, emoji…) un numero univoco chiamato <em>code point</em>, scritto <code>U+XXXX</code> (esempi: <code>U+0041</code> = 'A', <code>U+00E8</code> = 'è', <code>U+20AC</code> = '€'). Unicode però definisce solo l'elenco dei caratteri: per memorizzarli in byte serve una <em>codifica</em>, e la più usata è <strong>UTF-8</strong>.</p>
+          <h4>Come funziona UTF-8</h4>
+          <p>UTF-8 usa un numero variabile di byte (da 1 a 4) a seconda del code point. I bit iniziali del primo byte dicono quanti byte compongono il carattere; i byte successivi iniziano sempre con <code>10</code>.</p>
+          <ul>
+            <li><code>U+0000–U+007F</code>: 1 byte, <code>0xxxxxxx</code> (identico ad ASCII)</li>
+            <li><code>U+0080–U+07FF</code>: 2 byte, <code>110xxxxx 10xxxxxx</code></li>
+            <li><code>U+0800–U+FFFF</code>: 3 byte, <code>1110xxxx 10xxxxxx 10xxxxxx</code></li>
+            <li><code>U+10000–U+10FFFF</code>: 4 byte, <code>11110xxx 10xxxxxx 10xxxxxx 10xxxxxx</code></li>
+          </ul>
+          <p>Le «x» vanno riempite con i bit del code point, da destra a sinistra. Esempio per '€' (<code>U+20AC</code> = <code>0010 0000 1010 1100</code>): servono 3 byte → <code>1110<b>0010</b> 10<b>000010</b> 10<b>101100</b></code> = <code>E2 82 AC</code>.</p>
+          <h4>Perché ha avuto successo</h4>
+          <ul>
+            <li><strong>Compatibilità con ASCII:</strong> un file ASCII è già un file UTF-8 valido.</li>
+            <li><strong>Efficienza:</strong> i testi in alfabeto latino occupano poco spazio (1 byte per lettera, 2 per le accentate).</li>
+            <li><strong>Auto-sincronizzazione:</strong> dal primo byte si capisce se si è all'inizio di un carattere, quindi un errore non corrompe tutto il resto del testo.</li>
+          </ul>
+          <h4>In linguaggio C</h4>
+          <p>Il C tratta le stringhe come sequenze di byte: <code>strlen("Caffè")</code> restituisce 6, perché la 'è' occupa 2 byte (<code>C3 A8</code>). Quindi <code>strlen</code> conta i <em>byte</em>, non i caratteri visibili, e <code>s[i]</code> non è necessariamente un carattere intero. Per contare i veri caratteri si saltano i byte di continuazione, cioè quelli del tipo <code>10xxxxxx</code> (<code>(byte &amp; 0xC0) == 0x80</code>).</p>
+        </div>
 
         <!-- DENSE PROIEZIONE -->
         <div class="dense-grid">
