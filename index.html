@@ -1139,7 +1139,7 @@
         <!-- 3 ESEMPI PROGRESSIVI BIDIREZIONALI -->
         <div class="examples-container">
           <div class="examples-header">
-            <h3><span>🧪</span> 3 Esempi Progressivi Bidirezionali</h3>
+            <h3><span>🧪</span> 2 Esempi Progressivi Bidirezionali</h3>
             <span style="font-size: 0.75rem; color: var(--text-muted);">Signed Decimale ↔ Complemento a 2</span>
           </div>
 
@@ -1179,41 +1179,29 @@
               <li>Se provi a negarlo applicando la regola: <code>~10000000 = 01111111</code>; <code>+1 = 10000000</code> (torna a -128!). In C, su 8 bit non esiste +128.</li>
             </ol>
           </div>
-
-          <!-- Esempio 3: Avanzato -->
-          <div class="example-item">
-            <div class="example-title">
-              <span>Esempio 3: Interpretazione inversa e Sign Extension</span>
-              <span class="lvl-badge lvl-adv">Avanzato (Typecast C)</span>
-            </div>
-            <div class="bi-dir">
-              <div>int8_t: <strong>0xFE (-2)</strong></div>
-              <div class="arrow">⇄</div>
-              <div>int16_t: <strong>0xFFFE (-2)</strong> (Estensione di segno)</div>
-            </div>
-            <ol class="step-list">
-              <li>Quando in C assegni un <code>int8_t</code> negativo a un <code>int16_t</code>, il compilatore deve replicare il bit di segno a sinistra (*Sign Extension*).</li>
-              <li><code>11111110</code> (8 bit, -2) diventa <code>11111111 11111110</code> (16 bit, -2). Se si usassero zeri diventerebbe <code>0x00FE = +254</code>!</li>
-            </ol>
-          </div>
         </div>
 
         <!-- GENERATORE DI ESERCIZI CAT 3 -->
         <div class="trainer-card" id="trainerCat3">
           <div class="trainer-head">
-            <h4><span>🎯</span> Generatore di Esercizi: Complemento a Due</h4>
+            <h4><span>🎯</span> Generatore di Esercizi: Complemento a Due (bidirezionale)</h4>
             <div class="trainer-diff-select">
-              <button class="diff-btn active" onclick="setTrainerDiff('cat3', 'easy')">Facile (-1 .. -20)</button>
-              <button class="diff-btn" onclick="setTrainerDiff('cat3', 'med')">Medio (Full 8-bit)</button>
-              <button class="diff-btn" onclick="setTrainerDiff('cat3', 'hard')">Difficile (Bin → Dec Signed)</button>
+              <button class="diff-btn active" onclick="setTrainerDiff('cat3', 'easy')">Facile (-20 .. +20, 8 bit)</button>
+              <button class="diff-btn" onclick="setTrainerDiff('cat3', 'med')">Medio (tutto int8_t)</button>
+              <button class="diff-btn" onclick="setTrainerDiff('cat3', 'hard')">Difficile (16 bit)</button>
             </div>
+          </div>
+          <div class="trainer-diff-select" id="cat3DirSelect">
+            <button class="diff-btn active" onclick="setCat3Dir('rand')">Direzione: casuale</button>
+            <button class="diff-btn" onclick="setCat3Dir('d2b')">Decimale → Binario</button>
+            <button class="diff-btn" onclick="setCat3Dir('b2d')">Binario → Decimale</button>
           </div>
           <div class="trainer-prompt">
             <div class="prompt-text" id="cat3PromptText">Calcola la rappresentazione in Complemento a 2 su 8 bit per:</div>
             <div class="prompt-val" id="cat3PromptVal">-12</div>
           </div>
           <div class="trainer-interactive">
-            <input type="text" class="trainer-input" id="cat3Input" placeholder="Inserisci 8 bit (es. 11110100)..." onkeydown="if(event.key==='Enter') verifyCat3()">
+            <input type="text" class="trainer-input" id="cat3Input" placeholder="Inserisci la risposta..." onkeydown="if(event.key==='Enter') verifyCat3()">
             <button class="btn-act" onclick="verifyCat3()">Verifica</button>
             <button class="btn-sec" onclick="newExerciseCat3()">Nuovo Esercizio</button>
             <button class="btn-sec" onclick="toggleSolution('cat3')">Mostra Passaggi</button>
@@ -1905,14 +1893,14 @@
 
     const state = {
       cat2: { diff: 'easy', currentTarget: 0, sol: '', isHexTarget: false },
-      cat3: { diff: 'easy', currentTarget: 0, sol: '', isBinToDec: false },
+      cat3: { diff: 'easy', currentTarget: 0, sol: '', dir: 'd2b', bits: 8 },
       cat4: { diff: 'easy', currentVal: 0, targetExp: 0, sol: '' }
     };
 
     function setTrainerDiff(cat, diff) {
       state[cat].diff = diff;
       const container = document.getElementById(`trainer${cat.charAt(0).toUpperCase() + cat.slice(1)}`);
-      const buttons = container.querySelectorAll('.diff-btn');
+      const buttons = container.querySelectorAll('.trainer-head .diff-btn');
       buttons.forEach(b => b.classList.remove('active'));
       const activeBtn = Array.from(buttons).find(b => b.getAttribute('onclick').includes(`'${diff}'`));
       if (activeBtn) activeBtn.classList.add('active');
@@ -1997,7 +1985,18 @@
       return parts.join(' + ');
     }
 
-    // --- CAT 3: COMPLEMENTO A 2 ---
+    // --- CAT 3: COMPLEMENTO A 2 (bidirezionale) ---
+    let cat3Dir = 'rand';
+
+    function setCat3Dir(d) {
+      cat3Dir = d;
+      const btns = document.querySelectorAll('#cat3DirSelect .diff-btn');
+      btns.forEach(b => b.classList.remove('active'));
+      const act = Array.from(btns).find(b => b.getAttribute('onclick').includes(`'${d}'`));
+      if (act) act.classList.add('active');
+      newExerciseCat3();
+    }
+
     function newExerciseCat3() {
       const promptText = document.getElementById('cat3PromptText');
       const promptVal = document.getElementById('cat3PromptVal');
@@ -2008,53 +2007,74 @@
       sol.style.display = 'none';
       input.value = '';
 
-      if (state.cat3.diff === 'easy') {
-        // Numero negativo piccolo (-1 .. -20) -> 8 bit C2
-        state.cat3.currentTarget = -(Math.floor(Math.random() * 19) + 1);
-        state.cat3.isBinToDec = false;
-        promptText.innerText = 'Calcola la codifica in Complemento a 2 su 8 bit per il numero decimale:';
-        promptVal.innerText = state.cat3.currentTarget;
-        const pos = Math.abs(state.cat3.currentTarget);
-        const posBin = pos.toString(2).padStart(8, '0');
-        const c2Val = (256 + state.cat3.currentTarget).toString(2).padStart(8, '0');
-        state.cat3.sol = c2Val;
-        sol.innerHTML = `<strong>Soluzione:</strong><br>
-        1. Modulo positivo (+${pos}) a 8 bit: <code>${posBin}</code><br>
-        2. Inversione bit (NOT): <code>${posBin.split('').map(b => b === '0'?'1':'0').join('')}</code><br>
-        3. Aggiunta di 1: <code>${c2Val}</code> (Hex: 0x${(256 + state.cat3.currentTarget).toString(16).toUpperCase()}).`;
-      } else if (state.cat3.diff === 'med') {
-        // Numero negativo su tutto l'intervallo 8 bit (-21 .. -128)
-        state.cat3.currentTarget = -(Math.floor(Math.random() * 107) + 21);
-        state.cat3.isBinToDec = false;
-        promptText.innerText = 'Calcola il Complemento a 2 su 8 bit per il valore:';
-        promptVal.innerText = state.cat3.currentTarget;
-        const c2Val = (256 + state.cat3.currentTarget).toString(2).padStart(8, '0');
-        state.cat3.sol = c2Val;
-        sol.innerHTML = `<strong>Soluzione:</strong> <code>${c2Val}</code>.<br>
-        Verifica pesi: -128 + (${parseInt(c2Val.slice(1), 2)}) = ${state.cat3.currentTarget}.`;
+      const diff = state.cat3.diff;
+      const bits = diff === 'hard' ? 16 : 8;
+      const mod = Math.pow(2, bits);
+      let lo, hi;
+      if (diff === 'easy') { lo = -20; hi = 20; }
+      else if (diff === 'med') { lo = -128; hi = 127; }
+      else { lo = -32768; hi = 32767; }
+
+      let v = Math.floor(Math.random() * (hi - lo + 1)) + lo;
+      if (v === 0) v = -1;
+      const dir = cat3Dir === 'rand' ? (Math.random() < 0.5 ? 'd2b' : 'b2d') : cat3Dir;
+      const bin = (v < 0 ? mod + v : v).toString(2).padStart(bits, '0');
+      state.cat3.currentTarget = v;
+      state.cat3.dir = dir;
+      state.cat3.bits = bits;
+
+      if (dir === 'd2b') {
+        promptText.innerText = `Decimale → Binario: scrivi il Complemento a 2 su ${bits} bit del numero:`;
+        promptVal.innerText = v;
+        input.placeholder = `Inserisci ${bits} bit...`;
+        state.cat3.sol = bin;
+        const abs = Math.abs(v);
+        const absBin = abs.toString(2).padStart(bits, '0');
+        if (v < 0) {
+          const inv = absBin.split('').map(b => b === '0' ? '1' : '0').join('');
+          sol.innerHTML = `<strong>Soluzione:</strong> <code>${bin}</code><br>
+          1. Valore assoluto (+${abs}) su ${bits} bit: <code>${absBin}</code><br>
+          2. Inversione dei bit: <code>${inv}</code><br>
+          3. Somma di 1: <code>${bin}</code>`;
+        } else {
+          sol.innerHTML = `<strong>Soluzione:</strong> <code>${bin}</code><br>
+          Numero positivo: basta la normale conversione binaria, con il bit di segno a 0.`;
+        }
       } else {
-        // Difficile: Da Binario C2 a Decimale signed (inverso)
-        const randNeg = -(Math.floor(Math.random() * 125) + 1);
-        const binStr = (256 + randNeg).toString(2).padStart(8, '0');
-        state.cat3.currentTarget = randNeg;
-        state.cat3.isBinToDec = true;
-        promptText.innerText = 'Quale valore decimale con segno (int8_t) rappresenta questa stringa in Complemento a 2?';
-        promptVal.innerText = binStr;
-        state.cat3.sol = randNeg.toString();
-        sol.innerHTML = `<strong>Soluzione:</strong> ${randNeg}.<br>
-        Il primo bit è 1 (segno negativo). Applicando la negazione inversa (~bit + 1) si ottiene il valore assoluto ${Math.abs(randNeg)}.`;
+        promptText.innerText = `Binario → Decimale: quale valore con segno rappresenta questa stringa a ${bits} bit in Complemento a 2?`;
+        promptVal.innerText = bin;
+        input.placeholder = 'Inserisci il numero decimale (con segno)...';
+        state.cat3.sol = String(v);
+        if (v < 0) {
+          const inv = bin.split('').map(b => b === '0' ? '1' : '0').join('');
+          sol.innerHTML = `<strong>Soluzione:</strong> ${v}<br>
+          Il primo bit è 1: numero negativo.<br>
+          1. Inversione dei bit: <code>${inv}</code><br>
+          2. Somma di 1: <code>${Math.abs(v).toString(2).padStart(bits, '0')}</code> = ${Math.abs(v)}<br>
+          3. Quindi il valore è <strong>-${Math.abs(v)}</strong>.<br>
+          (Verifica con i pesi: -${mod / 2} + ${parseInt(bin.slice(1), 2)} = ${v})`;
+        } else {
+          sol.innerHTML = `<strong>Soluzione:</strong> ${v}<br>
+          Il primo bit è 0: numero positivo, si somma il peso delle posizioni a 1.`;
+        }
       }
     }
 
     function verifyCat3() {
-      const input = document.getElementById('cat3Input').value.trim();
+      let input = document.getElementById('cat3Input').value.trim().replace(/\s+/g, '');
       const fb = document.getElementById('cat3Feedback');
-      if (input === state.cat3.sol) {
+      let ok;
+      if (state.cat3.dir === 'b2d') {
+        ok = input.replace(/^\+/, '') === state.cat3.sol;
+      } else {
+        ok = input === state.cat3.sol;
+      }
+      if (ok) {
         fb.className = 'trainer-feedback correct';
         fb.innerHTML = '🎉 <strong>Corretto!</strong> Complemento a due perfettamente calcolato!';
       } else {
         fb.className = 'trainer-feedback wrong';
-        fb.innerHTML = `❌ <strong>Non corretto.</strong> Valore atteso: <code>${state.cat3.sol}</code>. Consulta la spiegazione!`;
+        fb.innerHTML = `❌ <strong>Non corretto.</strong> Riprova o consulta "Mostra Passaggi".`;
       }
     }
 
