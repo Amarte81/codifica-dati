@@ -1231,11 +1231,44 @@
           <h4>I tre campi del float a 32 bit</h4>
           <ul>
             <li><strong>Segno S (1 bit):</strong> 0 positivo, 1 negativo.</li>
-            <li><strong>Esponente E (8 bit):</strong> memorizzato con <em>bias</em> 127, cioè E = esponente reale + 127. Questo permette di avere esponenti negativi senza un bit di segno dedicato.</li>
+            <li><strong>Esponente E (8 bit):</strong> memorizzato con <em>bias</em> 127 (spiegato nel dettaglio sotto).</li>
             <li><strong>Mantissa M (23 bit):</strong> la parte frazionaria dopo la virgola. Il numero è sempre normalizzato nella forma 1.xxx, quindi l'1 iniziale è <em>implicito</em> e non si memorizza.</li>
           </ul>
           <p>Il <code>double</code> segue la stessa idea con 1 + 11 + 52 bit e bias 1023.</p>
-          <h4>Come si converte un numero (es. 12,375)</h4>
+
+          <h4>Il sistema del Bias (esponente polarizzato)</h4>
+          <p>L'esponente reale di un numero in notazione scientifica binaria può essere sia positivo (numeri grandi, es. <code>2⁵</code>) sia negativo (numeri piccoli, es. <code>2⁻³</code>). Invece di usare il complemento a due per l'esponente, IEEE 754 sceglie la <strong>notazione polarizzata (con bias)</strong>: al valore reale dell'esponente si somma una costante fissa chiamata <em>bias</em>, pari a <code>2^(k−1) − 1</code> (dove <em>k</em> è il numero di bit dell'esponente).</p>
+          <ul>
+            <li>Per <code>float</code> (8 bit di esponente): <strong>bias = 127</strong>. Formula: <code>E_memorizzato = E_reale + 127</code> (e inversamente <code>E_reale = E_memorizzato − 127</code>).</li>
+            <li>Per <code>double</code> (11 bit di esponente): <strong>bias = 1023</strong>.</li>
+            <li><strong>Esempi:</strong> esponente reale <code>0</code> → <code>0 + 127 = 127</code> (<code>01111111₂</code>); esponente <code>+3</code> → <code>3 + 127 = 130</code> (<code>10000010₂</code>); esponente <code>−4</code> → <code>−4 + 127 = 123</code> (<code>01111011₂</code>).</li>
+            <li><strong>Intervallo normale:</strong> i valori <code>0</code> e <code>255</code> (tutti 0 o tutti 1) sono riservati a casi speciali (zero, denormalizzati, ±Inf, NaN). Restano quindi i valori da <code>1</code> a <code>254</code>, che rappresentano esponenti reali da <strong>−126 a +127</strong>.</li>
+            <li><strong>Perché si usa il bias?</strong> Trasforma tutti gli esponenti in interi <em>senza segno</em> (sempre ≥ 0). In questo modo la CPU può confrontare l'ordine di grandezza di due float positivi confrontando i loro bit come semplici interi unsigned, rendendo l'hardware più veloce!</li>
+          </ul>
+
+          <h4>Conversione della parte fratta (frazionaria) in binario</h4>
+          <p>Così come la parte intera usa potenze positive di 2, i bit dopo la virgola rappresentano <strong>potenze negative di 2</strong>: il primo bit vale <code>2⁻¹ = 0,5</code>, il secondo <code>2⁻² = 0,25</code>, il terzo <code>2⁻³ = 0,125</code>, il quarto <code>2⁻⁴ = 0,0625</code> e così via.</p>
+          <p>Per convertire una parte frazionaria decimale (compresa tra 0 e 1) in binario si usa il <strong>metodo delle moltiplicazioni successive per 2</strong>:</p>
+          <ol>
+            <li>Moltiplica per <strong>2</strong> la parte frazionaria.</li>
+            <li>La <strong>parte intera</strong> ottenuta (che sarà sempre <code>0</code> oppure <code>1</code>) è la prossima cifra binaria dopo la virgola.</li>
+            <li>Prendi la nuova parte frazionaria rimasta e ripeti dal passo 1, finché la frazione diventa <code>0</code> (conversione esatta) oppure finché hai riempito i <strong>23 bit</strong> della mantissa (troncamento/arrotondamento).</li>
+          </ol>
+          <ul>
+            <li><strong>Esempio esatto (0,625):</strong>
+              <code>0,625 × 2 = 1,25</code> → bit <strong>1</strong> (resta <code>0,25</code>);
+              <code>0,25 × 2 = 0,50</code> → bit <strong>0</strong> (resta <code>0,50</code>);
+              <code>0,50 × 2 = 1,00</code> → bit <strong>1</strong> (resta <code>0</code>, stop).
+              Risultato: <code>0,625₁₀ = 0,101₂</code> (infatti 0,5 + 0,125 = 0,625).</li>
+            <li><strong>Esempio periodico (0,1):</strong>
+              <code>0,1 × 2 = 0,2</code> (<strong>0</strong>) →
+              <code>0,2 × 2 = 0,4</code> (<strong>0</strong>) →
+              <code>0,4 × 2 = 0,8</code> (<strong>0</strong>) →
+              <code>0,8 × 2 = 1,6</code> (<strong>1</strong>, resta 0,6) →
+              <code>0,6 × 2 = 1,2</code> (<strong>1</strong>, resta 0,2)… da qui il ciclo <code>0011</code> si ripete all'infinito: <code>0,1₁₀ = 0,0001100110011…₂</code>. Per questo in C <code>0.1f</code> non è mai esatto al 100%!</li>
+          </ul>
+
+          <h4>Come si converte un numero completo (es. 12,375)</h4>
           <ol>
             <li>Converti la parte intera (12 = <code>1100</code>) e la frazione (0,375 = <code>0,011</code>, moltiplicando per 2 e prendendo la parte intera).</li>
             <li>Scrivi <code>1100,011</code> e normalizza: <code>1,100011 × 2³</code>.</li>
@@ -1264,6 +1297,24 @@
               <li><strong>S (Segno):</strong> 0 = positivo, 1 = negativo</li>
               <li><strong>Esponente:</strong> Polarizzato con Bias = 127 (E_reale = E_memorizzato - 127)</li>
               <li><strong>Mantissa:</strong> Parte frazionaria con 1 implicito (1.frazione)</li>
+            </ul>
+          </div>
+          <div class="dense-box">
+            <h4>Sistema del Bias (Esponente Polarizzato)</h4>
+            <div class="dense-value">E = E_reale + 127 (Bias)</div>
+            <ul>
+              <li><strong>Perché:</strong> evita il bit di segno nell'esponente; confronti più veloci in hardware (solo interi unsigned)</li>
+              <li><strong>Range 8 bit:</strong> 1..254 → E_reale ∈ <strong>[−126, +127]</strong> (0 e 255 riservati)</li>
+              <li><strong>Esempi:</strong> E_reale = 0 → <code>127</code> | +3 → <code>130</code> | −4 → <code>123</code> (<code>double</code>: bias = 1023)</li>
+            </ul>
+          </div>
+          <div class="dense-box">
+            <h4>Conversione Parte Fratta (× 2)</h4>
+            <div class="dense-value">f × 2 → Parte Intera = Bit</div>
+            <ul>
+              <li><strong>Pesi frazionari:</strong> 2⁻¹ (0.5), 2⁻² (0.25), 2⁻³ (0.125), 2⁻⁴ (0.0625)…</li>
+              <li><strong>Algoritmo:</strong> moltiplica per 2; prendi la parte intera (0/1); ripeti sulla nuova frazione finché = 0 (o 23 bit)</li>
+              <li><strong>Es. 0.625:</strong> ×2=<strong>1</strong>.25 → ×2=<strong>0</strong>.5 → ×2=<strong>1</strong>.0 → <code>0.101₂</code></li>
             </ul>
           </div>
           <div class="dense-box">
