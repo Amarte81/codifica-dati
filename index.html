@@ -1221,7 +1221,7 @@
         <div class="section-title">
           <span>4.</span> Numeri Reali: Standard IEEE 754
         </div>
-        <span class="badge-c">float (32 bit), double (64 bit), %f</span>
+        <span class="badge-c">float (32 bit), %f</span>
       </div>
       <div class="section-body">
         <div class="intro-dense">I numeri reali si memorizzano in virgola mobile (IEEE 754): segno, esponente con bias e mantissa. Ampio intervallo, precisione limitata.</div>
@@ -1234,13 +1234,11 @@
             <li><strong>Esponente E (8 bit):</strong> memorizzato con <em>bias</em> 127 (spiegato nel dettaglio sotto).</li>
             <li><strong>Mantissa M (23 bit):</strong> la parte frazionaria dopo la virgola. Il numero è sempre normalizzato nella forma 1.xxx, quindi l'1 iniziale è <em>implicito</em> e non si memorizza.</li>
           </ul>
-          <p>Il <code>double</code> segue la stessa idea con 1 + 11 + 52 bit e bias 1023.</p>
 
           <h4>Il sistema del Bias (esponente polarizzato)</h4>
           <p>L'esponente reale di un numero in notazione scientifica binaria può essere sia positivo (numeri grandi, es. <code>2⁵</code>) sia negativo (numeri piccoli, es. <code>2⁻³</code>). Invece di usare il complemento a due per l'esponente, IEEE 754 sceglie la <strong>notazione polarizzata (con bias)</strong>: al valore reale dell'esponente si somma una costante fissa chiamata <em>bias</em>, pari a <code>2^(k−1) − 1</code> (dove <em>k</em> è il numero di bit dell'esponente).</p>
           <ul>
             <li>Per <code>float</code> (8 bit di esponente): <strong>bias = 127</strong>. Formula: <code>E_memorizzato = E_reale + 127</code> (e inversamente <code>E_reale = E_memorizzato − 127</code>).</li>
-            <li>Per <code>double</code> (11 bit di esponente): <strong>bias = 1023</strong>.</li>
             <li><strong>Esempi:</strong> esponente reale <code>0</code> → <code>0 + 127 = 127</code> (<code>01111111₂</code>); esponente <code>+3</code> → <code>3 + 127 = 130</code> (<code>10000010₂</code>); esponente <code>−4</code> → <code>−4 + 127 = 123</code> (<code>01111011₂</code>).</li>
             <li><strong>Intervallo normale:</strong> i valori <code>0</code> e <code>255</code> (tutti 0 o tutti 1) sono riservati a casi speciali (zero, denormalizzati, ±Inf, NaN). Restano quindi i valori da <code>1</code> a <code>254</code>, che rappresentano esponenti reali da <strong>−126 a +127</strong>.</li>
             <li><strong>Perché si usa il bias?</strong> Trasforma tutti gli esponenti in interi <em>senza segno</em> (sempre ≥ 0). In questo modo la CPU può confrontare l'ordine di grandezza di due float positivi confrontando i loro bit come semplici interi unsigned, rendendo l'hardware più veloce!</li>
@@ -1276,9 +1274,9 @@
             <li>Mantissa = <code>10001100000000000000000</code>; segno = 0.</li>
           </ol>
           <h4>Limiti e casi speciali</h4>
-          <p>Molte frazioni decimali (come 0,1) sono periodiche in binario e vengono quindi <strong>approssimate</strong>: <code>0.1 + 0.2 == 0.3</code> in C è falso. Un <code>float</code> ha circa 7 cifre decimali significative, un <code>double</code> circa 15–16. Esponente tutto a 1 con mantissa 0 indica ±infinito, con mantissa diversa da 0 indica NaN (non un numero); esponente 0 serve per lo zero e i numeri denormalizzati.</p>
+          <p>Molte frazioni decimali (come 0,1) sono periodiche in binario e vengono quindi <strong>approssimate</strong>: <code>0.1 + 0.2 == 0.3</code> in C è falso. Un <code>float</code> ha circa 7 cifre decimali significative. Esponente tutto a 1 con mantissa 0 indica ±infinito, con mantissa diversa da 0 indica NaN (non un numero); esponente 0 serve per lo zero e i numeri denormalizzati.</p>
           <h4>In linguaggio C</h4>
-          <p>Si usano i tipi <code>float</code> e <code>double</code>, con <code>%f</code> (o <code>%e</code>, <code>%g</code>) in <code>printf</code>. Mai confrontare due reali con <code>==</code>: si confronta la differenza con una piccola tolleranza.</p>
+          <p>Si usa il tipo <code>float</code>, con <code>%f</code> (o <code>%e</code>, <code>%g</code>) in <code>printf</code>. Mai confrontare due reali con <code>==</code>: si confronta la differenza con una piccola tolleranza.</p>
         </div>
 
         <!-- DENSE PROIEZIONE -->
@@ -1305,7 +1303,7 @@
             <ul>
               <li><strong>Perché:</strong> evita il bit di segno nell'esponente; confronti più veloci in hardware (solo interi unsigned)</li>
               <li><strong>Range 8 bit:</strong> 1..254 → E_reale ∈ <strong>[−126, +127]</strong> (0 e 255 riservati)</li>
-              <li><strong>Esempi:</strong> E_reale = 0 → <code>127</code> | +3 → <code>130</code> | −4 → <code>123</code> (<code>double</code>: bias = 1023)</li>
+              <li><strong>Esempi:</strong> E_reale = 0 → <code>127</code> | +3 → <code>130</code> | −4 → <code>123</code></li>
             </ul>
           </div>
           <div class="dense-box">
@@ -1819,7 +1817,7 @@
               </tr>
               <tr>
                 <td><strong>Numeri reali</strong></td>
-                <td><code style="color: #4ade80; font-weight: bold;">IEEE 754 (Float32 / Double64)</code></td>
+                <td><code style="color: #4ade80; font-weight: bold;">IEEE 754 (Float 32-bit)</code></td>
                 <td>FPU, calcolo scientifico, grafica 3D</td>
                 <td>Notazione scientifica binaria con segno, esponente polarizzato (bias) e mantissa.</td>
               </tr>
